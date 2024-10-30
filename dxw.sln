@@ -6,6 +6,9 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dxw", "dxw\dxw.vcxproj", "{A039A76A-E064-40B0-AA34-1FC6732DB7BA}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dxw_app", "dxw_app\dxw_app.vcxproj", "{4382AD4D-0878-40B4-A203-64CBEE798985}"
+	ProjectSection(ProjectDependencies) = postProject
+		{A039A76A-E064-40B0-AA34-1FC6732DB7BA} = {A039A76A-E064-40B0-AA34-1FC6732DB7BA}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
