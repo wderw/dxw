@@ -1,7 +1,33 @@
 #include <windows.h>
+#include <cstdlib>
+#include <string>
 
 HINSTANCE hInst;
 HWND hWndMain;
+HINSTANCE hDLL;
+
+const std::wstring libraryName = L"dxw.dll";
+
+bool LoadWrapperDll()
+{
+    hDLL = LoadLibrary(libraryName.c_str());
+    if (!hDLL)
+    {
+        std::wstring errorString = L"Failed to load:" + libraryName;
+        MessageBox(NULL, errorString.c_str(), L"Error", MB_OK);
+        return false;
+    }
+    return true;
+}
+
+void ReleaseWrapperDll()
+{
+    if (hDLL)
+    {
+        FreeLibrary(hDLL);
+        hDLL = nullptr;
+    }
+}
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
@@ -40,6 +66,12 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     hWndMain = CreateWindow(L"DXWWindowClass", L"DirectX Wrapper test", WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, 800, 600, nullptr, nullptr, hInstance, nullptr);
     if (!hWndMain) return -1;
 
+    if (!LoadWrapperDll())
+    {
+        OutputDebugStringA("Could not load wrapper library!");
+        return -1;
+    }
+
     ShowWindow(hWndMain, nCmdShow);
     UpdateWindow(hWndMain);
 
@@ -50,5 +82,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         DispatchMessage(&msg);
     }
 
+    ReleaseWrapperDll();
     return (int)msg.wParam;
 }
