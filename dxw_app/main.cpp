@@ -1,12 +1,20 @@
 #include <windows.h>
 #include <cstdlib>
-#include <string>
+#include <iostream>
 
 HINSTANCE hInst;
 HWND hWndMain;
 HINSTANCE hDLL;
 
 const std::wstring libraryName = L"dxw.dll";
+
+void SetupConsole()
+{
+    AllocConsole();
+    FILE* fp;
+    freopen_s(&fp, "CONOUT$", "w", stdout);
+    freopen_s(&fp, "CONOUT$", "w", stderr);
+}
 
 bool LoadWrapperDll()
 {
@@ -17,6 +25,8 @@ bool LoadWrapperDll()
         MessageBox(NULL, errorString.c_str(), L"Error", MB_OK);
         return false;
     }
+
+    std::cout << "Wrapper loaded successfully!" << std::endl;
     return true;
 }
 
@@ -66,9 +76,11 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     hWndMain = CreateWindow(L"DXWWindowClass", L"DirectX Wrapper test", WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, 800, 600, nullptr, nullptr, hInstance, nullptr);
     if (!hWndMain) return -1;
 
+    SetupConsole();
+
     if (!LoadWrapperDll())
     {
-        OutputDebugStringA("Could not load wrapper library!");
+        std::cerr << "Could not load wrapper dll!" << std::endl;
         return -1;
     }
 
