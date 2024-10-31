@@ -1,5 +1,6 @@
 #include <windows.h>
 #include "Log.h"
+#include "DxwSharedContext.h"
 
 #pragma comment(lib, "d3d11.lib")
 #pragma comment(lib, "d3dcompiler.lib")

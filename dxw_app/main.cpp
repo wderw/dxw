@@ -1,12 +1,18 @@
 #include <windows.h>
 #include <cstdlib>
 #include <iostream>
+#include <tchar.h>
 
 HINSTANCE hInst;
 HWND hWndMain;
 HINSTANCE hDLL;
+HWND g_hDrawingPanel = nullptr;
+
+typedef void(__stdcall* DXW_InitWindowFunc)(HWND);
+DXW_InitWindowFunc DXW_InitWindow = nullptr;
 
 const std::wstring libraryName = L"dxw.dll";
+void CreateDrawingPanel(HWND parentHwnd);
 
 void SetupConsole()
 {
@@ -14,6 +20,15 @@ void SetupConsole()
     FILE* fp;
     freopen_s(&fp, "CONOUT$", "w", stdout);
     freopen_s(&fp, "CONOUT$", "w", stderr);
+}
+
+void CreateDrawingPanel(HWND parentHwnd)
+{
+    // Create a child window (panel) for drawing
+    g_hDrawingPanel = CreateWindowEx(
+        0, L"STATIC", L"", WS_CHILD | WS_VISIBLE,
+        80, 80, 800, 600, parentHwnd, nullptr, nullptr, nullptr
+    );
 }
 
 bool LoadWrapperDll()
@@ -24,6 +39,22 @@ bool LoadWrapperDll()
         std::wstring errorString = L"Failed to load:" + libraryName;
         MessageBox(NULL, errorString.c_str(), L"Error", MB_OK);
         return false;
+    }
+
+    if (hDLL)
+    {
+        DXW_InitWindow = (DXW_InitWindowFunc)GetProcAddress(hDLL, "DXW_InitWindow");
+        if (!DXW_InitWindow)
+        {
+            DWORD error = GetLastError();
+            TCHAR errorMsg[256];
+            _stprintf_s(errorMsg, _T("GetProcAddress failed. Error code: %lu"), error);
+            MessageBox(nullptr, errorMsg, _T("Error"), MB_OK);
+        }
+        else
+        {
+            MessageBox(nullptr, L"DXW_InitWindow Loaded Correctly!", _T("Error"), MB_OK);
+        }
     }
 
     std::cout << "Wrapper loaded successfully!" << std::endl;
@@ -44,15 +75,39 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     switch (message)
     {
     case WM_CREATE:
+    {
+        CreateDrawingPanel(hWnd);
+        CreateWindow(
+            L"BUTTON",
+            L"Start Drawing",
+            WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
+            10,         // x position
+            10,         // y position
+            150,        // Button width
+            60,         // Button height
+            hWnd,       // Parent window
+            (HMENU)1,
+            (HINSTANCE)GetWindowLongPtr(hWnd, GWLP_HINSTANCE),
+            nullptr);
+        return 0;
+    }
     case WM_MOVE:
     case WM_SIZE:
     case WM_MOUSEMOVE:
     case WM_SHOWWINDOW:
+    {
+        if (wParam)
+        {  // wParam is TRUE when the window is being shown
+            if (DXW_InitWindow)
+            {
+                DXW_InitWindow(g_hDrawingPanel);
+            }
+        }
         return 0;
+    }
     case WM_DESTROY:
         PostQuitMessage(0);
         return 0;
-
     default:
         return DefWindowProc(hWnd, message, wParam, lParam);
     }
@@ -73,7 +128,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     wcex.lpszClassName = L"DXWWindowClass";
     RegisterClassEx(&wcex);
 
-    hWndMain = CreateWindow(L"DXWWindowClass", L"DirectX Wrapper test", WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, 800, 600, nullptr, nullptr, hInstance, nullptr);
+    hWndMain = CreateWindow(L"DXWWindowClass", L"DirectX Wrapper test", WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, 1024, 768, nullptr, nullptr, hInstance, nullptr);
     if (!hWndMain) return -1;
 
     SetupConsole();

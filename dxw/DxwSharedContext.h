@@ -17,6 +17,16 @@ public:
     void RegisterWindow(std::shared_ptr<DxwWindow> window)
     {
         windows.emplace_back(window);
+        LOG_INFO("Registered window with id: {}. Current number of windows: {}", window->GetId(), windows.size());
+    }
+
+    void ReleaseAllDxwWindows()
+    {
+        for (auto& window : windows)
+        {
+            window->ReleaseResources();
+        }
+        windows.clear();
     }
 
 private:
@@ -27,6 +37,7 @@ private:
 
     ~DxwSharedContext()
     {
+        dxw::DxwSharedContext::GetInstance().ReleaseAllDxwWindows();
         LOG_INFO("Shared context destroyed");
     }
 
