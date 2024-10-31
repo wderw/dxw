@@ -1,6 +1,13 @@
 #pragma once
 
 #include <windows.h>
+#include <d3d11.h>
+#include <d3dcompiler.h>
+#include <dxgi.h>
+#include <DirectXMath.h>
+#include <d2d1_1.h>
+#include <d2d1helper.h>
+#include <dwrite.h>
 
 namespace dxw
 {
