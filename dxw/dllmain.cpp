@@ -4,9 +4,8 @@
 void Init()
 {
     dxw::Log::Init();
-    LPSTR commandLine = GetCommandLineA();
     LOG_INFO("DLL_PROCESS_ATTACH called for process id: {}", GetCurrentProcessId());
-    LOG_INFO("Calling process command: {}", commandLine);
+    LOG_INFO("Calling process command: {}", GetCommandLineA());
 }
 
 BOOL APIENTRY DllMain( HMODULE hModule,
