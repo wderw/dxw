@@ -9,7 +9,9 @@ HINSTANCE hDLL;
 HWND g_hDrawingPanel = nullptr;
 
 typedef void(__stdcall* DXW_InitWindowFunc)(HWND);
+typedef void(__stdcall* DXW_D3DDeviceContext_ClearFunc)();
 DXW_InitWindowFunc DXW_InitWindow = nullptr;
+DXW_D3DDeviceContext_ClearFunc DXW_D3DDeviceContext_Clear = nullptr;
 
 const std::wstring libraryName = L"dxw.dll";
 void CreateDrawingPanel(HWND parentHwnd);
@@ -55,6 +57,20 @@ bool LoadWrapperDll()
         {
             MessageBox(nullptr, L"DXW_InitWindow Loaded Correctly!", _T("Error"), MB_OK);
         }
+
+        DXW_D3DDeviceContext_Clear = (DXW_D3DDeviceContext_ClearFunc)GetProcAddress(hDLL, "DXW_D3DDeviceContext_Clear");
+        if (!DXW_D3DDeviceContext_Clear)
+        {
+            DWORD error = GetLastError();
+            TCHAR errorMsg[256];
+            _stprintf_s(errorMsg, _T("GetProcAddress failed. Error code: %lu"), error);
+            MessageBox(nullptr, errorMsg, _T("Error"), MB_OK);
+        }
+        else
+        {
+            MessageBox(nullptr, L"DXW_D3DDeviceContext_Clear Loaded Correctly!", _T("Error"), MB_OK);
+        }
+
     }
 
     std::cout << "Wrapper loaded successfully!" << std::endl;
@@ -95,16 +111,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     case WM_SIZE:
     case WM_MOUSEMOVE:
     case WM_SHOWWINDOW:
-    {
-        if (wParam)
-        {  // wParam is TRUE when the window is being shown
-            if (DXW_InitWindow)
-            {
-                DXW_InitWindow(g_hDrawingPanel);
-            }
-        }
         return 0;
-    }
     case WM_DESTROY:
         PostQuitMessage(0);
         return 0;
@@ -141,6 +148,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     ShowWindow(hWndMain, nCmdShow);
     UpdateWindow(hWndMain);
+
+    DXW_InitWindow(g_hDrawingPanel);
+    DXW_D3DDeviceContext_Clear();
 
     MSG msg = {};
     while (GetMessage(&msg, nullptr, 0, 0))

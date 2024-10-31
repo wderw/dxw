@@ -2,6 +2,7 @@
 #include "DxwWindow.h"
 #include "DxwSharedContext.h"
 #include "Vertex.h"
+#include "TransformBuffer.h"
 
 namespace dxw
 {
@@ -11,6 +12,14 @@ int DxwWindow::instanceCounter = 0;
 DxwWindow::DxwWindow()
 {
 	id = instanceCounter++;
+}
+
+void DxwWindow::Clear()
+{
+	LOG_WARN("CLEAR CALLED");
+	float clearColor[4] = { 0.9, 0.14, 0.12, 1.0f };
+	pD3DDeviceContext->ClearRenderTargetView(pRenderTargetView.Get(), clearColor);
+	pSwapChain->Present(1, 0); // Vsync enabled
 }
 
 void DxwWindow::InitDirect3D(HWND hWnd)
@@ -43,10 +52,10 @@ void DxwWindow::InitDirect3D(HWND hWnd)
 		0,
 		D3D11_SDK_VERSION,
 		&swapChainDesc,
-		&pSwapChain,
-		&pD3DDevice,
+		pSwapChain.GetAddressOf(),
+		pD3DDevice.GetAddressOf(),
 		nullptr,
-		&pD3DDeviceContext
+		pD3DDeviceContext.GetAddressOf()
 	);
 	if (FAILED(hr))
 	{
@@ -56,7 +65,7 @@ void DxwWindow::InitDirect3D(HWND hWnd)
 
 
 	LOG_TRACE("Initializing back buffer");
-	ComPtr<ID3D11Texture2D> pBackBuffer = nullptr;
+	ComPtr<ID3D11Texture2D> pBackBuffer{ nullptr };
 	hr = pSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)pBackBuffer.GetAddressOf());
 	if (FAILED(hr))
 	{
@@ -65,14 +74,14 @@ void DxwWindow::InitDirect3D(HWND hWnd)
 	}
 
 	LOG_TRACE("Creating RenderTargetView");
-	hr = pD3DDevice->CreateRenderTargetView(pBackBuffer.Get(), nullptr, &pRenderTargetView);
+	hr = pD3DDevice->CreateRenderTargetView(pBackBuffer.Get(), nullptr, pRenderTargetView.GetAddressOf());
 	if (FAILED(hr))
 	{
 		LOG_ERROR("Failed to create RenderTargetView!");
 		return;
 	}
 
-	pD3DDeviceContext->OMSetRenderTargets(1, &pRenderTargetView, nullptr);
+	pD3DDeviceContext->OMSetRenderTargets(1, pRenderTargetView.GetAddressOf(), nullptr);
 
 	LOG_TRACE("Creating D3D11 Viewport");
 	D3D11_VIEWPORT viewport;
@@ -115,7 +124,7 @@ void DxwWindow::InitDirect3D(HWND hWnd)
 	initData.pSysMem = verts.data();
 
 	LOG_TRACE("Creating vertex buffer");
-	hr = pD3DDevice->CreateBuffer(&bufferDesc, &initData, &pVertexBuffer);
+	hr = pD3DDevice->CreateBuffer(&bufferDesc, &initData, pVertexBuffer.GetAddressOf());
 	if (FAILED(hr))
 	{
 		LOG_ERROR("Failed to create vertex buffer!");
@@ -133,38 +142,38 @@ void DxwWindow::InitDirect3D(HWND hWnd)
 
 	LOG_TRACE("Compiling shaders");
 	// shaders
-	ComPtr<ID3DBlob> pVSBlob = nullptr;
-	ComPtr<ID3DBlob> pPSBlob = nullptr;
+	ComPtr<ID3DBlob> pVSBlob{ nullptr };
+	ComPtr<ID3DBlob> pPSBlob{ nullptr };
 
-	hr = D3DCompile(DxwSharedContext::GetInstance().vertexShaderSource, strlen(DxwSharedContext::GetInstance().vertexShaderSource), nullptr, nullptr, nullptr, "main", "vs_5_0", 0, 0, &pVSBlob, nullptr);
+	hr = D3DCompile(DxwSharedContext::GetInstance().vertexShaderSource, strlen(DxwSharedContext::GetInstance().vertexShaderSource), nullptr, nullptr, nullptr, "main", "vs_5_0", 0, 0, pVSBlob.GetAddressOf(), nullptr);
 	if (FAILED(hr))
 	{
 		LOG_ERROR("Failed to compile vertex shader!");
 		return;
 	}
 
-	hr = D3DCompile(DxwSharedContext::GetInstance().pixelShaderSource, strlen(DxwSharedContext::GetInstance().pixelShaderSource), nullptr, nullptr, nullptr, "main", "ps_5_0", 0, 0, &pPSBlob, nullptr);
+	hr = D3DCompile(DxwSharedContext::GetInstance().pixelShaderSource, strlen(DxwSharedContext::GetInstance().pixelShaderSource), nullptr, nullptr, nullptr, "main", "ps_5_0", 0, 0, pPSBlob.GetAddressOf(), nullptr);
 	if (FAILED(hr))
 	{
 		LOG_ERROR("Failed to compile pixel shader!");
 		return;
 	}
 
-	hr = pD3DDevice->CreateVertexShader(pVSBlob->GetBufferPointer(), pVSBlob->GetBufferSize(), nullptr, &pVertexShader);
+	hr = pD3DDevice->CreateVertexShader(pVSBlob->GetBufferPointer(), pVSBlob->GetBufferSize(), nullptr, pVertexShader.GetAddressOf());
 	if (FAILED(hr))
 	{
 		LOG_ERROR("Failed to create vertex shader!");
 		return;
 	}
 
-	hr = pD3DDevice->CreatePixelShader(pPSBlob->GetBufferPointer(), pPSBlob->GetBufferSize(), nullptr, &pPixelShader);
+	hr = pD3DDevice->CreatePixelShader(pPSBlob->GetBufferPointer(), pPSBlob->GetBufferSize(), nullptr, pPixelShader.GetAddressOf());
 	if (FAILED(hr))
 	{
 		LOG_ERROR("Failed to create pixel shader!");
 		return;
 	}
 
-	hr = pD3DDevice->CreateInputLayout(layout, numElements, pVSBlob->GetBufferPointer(), pVSBlob->GetBufferSize(), &pInputLayout);
+	hr = pD3DDevice->CreateInputLayout(layout, numElements, pVSBlob->GetBufferPointer(), pVSBlob->GetBufferSize(), pInputLayout.GetAddressOf());
 	if (FAILED(hr))
 	{
 		LOG_ERROR("Failed to create input layout!");
@@ -187,7 +196,7 @@ void DxwWindow::InitDirect3D(HWND hWnd)
 	blendDesc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
 	blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
 
-	ComPtr<ID3D11BlendState> blendState;
+	ComPtr<ID3D11BlendState> blendState{ nullptr };
 	hr = pD3DDevice->CreateBlendState(&blendDesc, blendState.GetAddressOf());
 	if (FAILED(hr))
 	{
@@ -203,7 +212,7 @@ void DxwWindow::InitDirect2D()
 	LOG_INFO("Starting Direct2D initialization");
 
 	LOG_TRACE("Creating D2D1Factory");
-	HRESULT hr = D2D1CreateFactory(D2D1_FACTORY_TYPE_MULTI_THREADED, __uuidof(ID2D1Factory1), nullptr, (void**)&pD2DFactory);
+	HRESULT hr = D2D1CreateFactory(D2D1_FACTORY_TYPE_MULTI_THREADED, __uuidof(ID2D1Factory1), nullptr, (void**)pD2DFactory.GetAddressOf());
 	if (FAILED(hr))
 	{
 		LOG_ERROR("Failed to create Direct2D factory.");
@@ -211,7 +220,7 @@ void DxwWindow::InitDirect2D()
 	}
 
 	LOG_TRACE("Creating IDXGIDevice from D3D device");
-	ComPtr<IDXGIDevice> pDXGIDevice = nullptr;
+	ComPtr<IDXGIDevice> pDXGIDevice{ nullptr };
 	hr = pD3DDevice->QueryInterface(__uuidof(IDXGIDevice), (void**)pDXGIDevice.GetAddressOf());
 	if (FAILED(hr))
 	{
@@ -220,7 +229,7 @@ void DxwWindow::InitDirect2D()
 	}
 
 	LOG_TRACE("Creating Direct2D Device");
-	hr = pD2DFactory->CreateDevice(pDXGIDevice.Get(), &pD2DDevice);
+	hr = pD2DFactory->CreateDevice(pDXGIDevice.Get(), pD2DDevice.GetAddressOf());
 	if (FAILED(hr) || pD2DDevice == nullptr)
 	{
 		LOG_ERROR("Failed to create Direct2D device.");
@@ -228,7 +237,7 @@ void DxwWindow::InitDirect2D()
 	}
 
 	LOG_TRACE("Creating Direct2D device context");
-	hr = pD2DDevice->CreateDeviceContext(D2D1_DEVICE_CONTEXT_OPTIONS_ENABLE_MULTITHREADED_OPTIMIZATIONS, &pD2DDeviceContext);
+	hr = pD2DDevice->CreateDeviceContext(D2D1_DEVICE_CONTEXT_OPTIONS_ENABLE_MULTITHREADED_OPTIMIZATIONS, pD2DDeviceContext.GetAddressOf());
 	if (FAILED(hr) || pD2DDeviceContext == nullptr)
 	{
 		LOG_ERROR("Failed to create Direct2D device context.");
@@ -237,12 +246,14 @@ void DxwWindow::InitDirect2D()
 	pD2DDeviceContext->SetAntialiasMode(D2D1_ANTIALIAS_MODE_ALIASED);
 
 	LOG_TRACE("Creating bitmap from DxgiSurface");
-	ComPtr<ID3D11Texture2D> pBackBufferTexture = nullptr;
+
+	ComPtr<ID3D11Texture2D> pBackBufferTexture{ nullptr };
+	IDXGISurface* pSurface{ nullptr };
+
 	hr = pSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)pBackBufferTexture.GetAddressOf());
 	if (SUCCEEDED(hr))
 	{
-		ComPtr<IDXGISurface> pSurface = nullptr;
-		hr = pBackBufferTexture->QueryInterface(__uuidof(IDXGISurface), (void**)pSurface.GetAddressOf());
+		hr = pBackBufferTexture->QueryInterface(__uuidof(IDXGISurface), (void**)&pSurface);
 		if (SUCCEEDED(hr))
 		{
 			auto props = D2D1::BitmapProperties1(
@@ -251,16 +262,16 @@ void DxwWindow::InitDirect2D()
 					DXGI_FORMAT_R8G8B8A8_UNORM, D2D1_ALPHA_MODE_PREMULTIPLIED));
 
 			hr = pD2DDeviceContext->CreateBitmapFromDxgiSurface(
-				pSurface.Get(),
+				pSurface,
 				props,
-				&pD2DBitmap
+				pD2DBitmap.GetAddressOf()
 			);
 		}
 	}
 
 	if (pD2DBitmap)
 	{
-		pD2DDeviceContext->SetTarget(pD2DBitmap);
+		pD2DDeviceContext->SetTarget(pD2DBitmap.Get());
 	}
 	else
 	{
@@ -273,7 +284,7 @@ void DxwWindow::InitDirect2D()
 void DxwWindow::CreateTextResources()
 {
 	LOG_TRACE("Creating text resources");
-	HRESULT hr = DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory), reinterpret_cast<IUnknown**>(&pDWriteFactory));
+	HRESULT hr = DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory), reinterpret_cast<IUnknown**>(pDWriteFactory.GetAddressOf()));
 
 	hr = pDWriteFactory->CreateTextFormat(
 		L"Arial",
@@ -283,7 +294,7 @@ void DxwWindow::CreateTextResources()
 		DWRITE_FONT_STRETCH_NORMAL,
 		20.0f, // font size
 		L"en-us",
-		&pDefaultTextFormat
+		pDefaultTextFormat.GetAddressOf()
 	);
 
 	if (SUCCEEDED(hr))

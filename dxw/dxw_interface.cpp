@@ -21,4 +21,9 @@ HRESULT DXW_InitWindow(HWND hWnd)
 	return id;
 }
 
+void DXW_D3DDeviceContext_Clear()
+{
+	DxwSharedContext::GetInstance().GetWindowByIndex(0)->Clear();
+}
+
 }

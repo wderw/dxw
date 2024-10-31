@@ -20,13 +20,9 @@ public:
         LOG_INFO("Registered window with id: {}. Current number of windows: {}", window->GetId(), windows.size());
     }
 
-    void ReleaseAllDxwWindows()
+    std::shared_ptr<DxwWindow> GetWindowByIndex(int index)
     {
-        for (auto& window : windows)
-        {
-            window->ReleaseResources();
-        }
-        windows.clear();
+        return windows[index];
     }
 
 private:
@@ -37,7 +33,6 @@ private:
 
     ~DxwSharedContext()
     {
-        dxw::DxwSharedContext::GetInstance().ReleaseAllDxwWindows();
         LOG_INFO("Shared context destroyed");
     }
 

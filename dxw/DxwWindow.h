@@ -24,24 +24,7 @@ public:
 	void InitDirect3D(HWND);
 	void InitDirect2D();
 	void CreateTextResources();
-	void ReleaseResources()
-	{
-		//pD3DDevice.Reset();
-		//pD3DDeviceContext.Reset();
-		//pSwapChain.Reset();
-		//pRenderTargetView.Reset();
-		//pD2DFactory.Reset();
-		//pD2DDevice.Reset();
-		//pD2DDeviceContext.Reset();
-		//pD2DBitmap.Reset();
-		//pDWriteFactory.Reset();
-		//pDefaultTextFormat.Reset();
-		//pDefaultBrush.Reset();
-		//pVertexBuffer.Reset();
-		//pInputLayout.Reset();
-		//pVertexShader.Reset();
-		//pPixelShader.Reset();
-	}
+	void Clear();
 	int GetId() { return id; }
 
 private:
@@ -49,21 +32,21 @@ private:
 	static int instanceCounter;
 	constexpr static int DRAWLIB_COUNT{ 100000 };
 
-	ID3D11Device* pD3DDevice{ nullptr };
-	ID3D11DeviceContext* pD3DDeviceContext{ nullptr };
-	IDXGISwapChain* pSwapChain{ nullptr };
-	ID3D11RenderTargetView* pRenderTargetView{ nullptr };
-	ID2D1Factory1* pD2DFactory{ nullptr };
-	ID2D1Device* pD2DDevice{ nullptr };
-	ID2D1DeviceContext* pD2DDeviceContext{ nullptr };
-	ID2D1Bitmap1* pD2DBitmap{ nullptr };
-	IDWriteFactory* pDWriteFactory{ nullptr };
-	IDWriteTextFormat* pDefaultTextFormat{ nullptr };
-	ID2D1SolidColorBrush* pDefaultBrush{ nullptr };
-	ID3D11Buffer* pVertexBuffer{ nullptr };
-	ID3D11InputLayout* pInputLayout{ nullptr };
-	ID3D11VertexShader* pVertexShader{ nullptr };
-	ID3D11PixelShader* pPixelShader{ nullptr };
+	ComPtr<ID3D11Device> pD3DDevice{ nullptr };
+	ComPtr<ID3D11DeviceContext> pD3DDeviceContext{ nullptr };
+	ComPtr<IDXGISwapChain> pSwapChain{ nullptr };
+	ComPtr<ID3D11RenderTargetView> pRenderTargetView{ nullptr };
+	ComPtr<ID2D1Factory1> pD2DFactory{ nullptr };
+	ComPtr<ID2D1Device> pD2DDevice{ nullptr };
+	ComPtr<ID2D1DeviceContext> pD2DDeviceContext{ nullptr };
+	ComPtr<ID2D1Bitmap1> pD2DBitmap{ nullptr };
+	ComPtr<IDWriteFactory> pDWriteFactory{ nullptr };
+	ComPtr<IDWriteTextFormat> pDefaultTextFormat{ nullptr };
+	ComPtr<ID2D1SolidColorBrush> pDefaultBrush{ nullptr };
+	ComPtr<ID3D11Buffer> pVertexBuffer{ nullptr };
+	ComPtr<ID3D11InputLayout> pInputLayout{ nullptr };
+	ComPtr<ID3D11VertexShader> pVertexShader{ nullptr };
+	ComPtr<ID3D11PixelShader> pPixelShader{ nullptr };
 
 	float ConvertPixelToNDCX(int pixelX, int width, float aspectRatio)
 	{
