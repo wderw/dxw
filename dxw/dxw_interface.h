@@ -5,6 +5,6 @@
 namespace dxw
 {
 
-extern "C" __declspec(dllexport) HRESULT DXW_InitWindow(HWND hwnd);
+extern "C" __declspec(dllexport) HRESULT DXW_InitWindow(HWND hWnd);
 
 }

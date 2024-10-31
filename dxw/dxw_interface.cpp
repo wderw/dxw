@@ -7,10 +7,10 @@
 namespace dxw
 {
 
-HRESULT DXW_InitWindow(HWND hwnd)
+HRESULT DXW_InitWindow(HWND hWnd)
 {
 	auto window = std::make_shared<DxwWindow>();
-	window->InitDirectX(hwnd);
+	window->InitDirectX(hWnd);
 	DxwSharedContext::GetInstance().RegisterWindow(window);
 	return window->GetId();
 }
