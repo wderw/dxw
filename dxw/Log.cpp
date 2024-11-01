@@ -9,7 +9,7 @@ std::shared_ptr<spdlog::logger> Log::s_Logger;
 
 void Log::Init()
 {
-	spdlog::set_pattern("%^<%T>[%l][%n] %v%$");
+	spdlog::set_pattern("%^ <%T> [%n] [%l] %v%$");
 	s_Logger = spdlog::stdout_color_mt("DXW");
 	s_Logger->set_level(spdlog::level::trace);
 }

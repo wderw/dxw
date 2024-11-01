@@ -25,6 +25,8 @@ private:
 
 #define LOG_TRACE(format, ...) \
     ::dxw::Log::GetLogger()->trace("[{}:{}]: " format, dxw::Utils::ExtractBaseName(__FILE__), __LINE__, ##__VA_ARGS__)
+#define LOG_DEBUG(format, ...) \
+    ::dxw::Log::GetLogger()->debug("[{}:{}]: " format, dxw::Utils::ExtractBaseName(__FILE__), __LINE__, ##__VA_ARGS__)
 #define LOG_INFO(format, ...) \
     ::dxw::Log::GetLogger()->info("[{}:{}]: " format, dxw::Utils::ExtractBaseName(__FILE__), __LINE__, ##__VA_ARGS__)
 #define LOG_WARN(format, ...) \

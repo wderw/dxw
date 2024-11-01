@@ -24,14 +24,14 @@ void DxwWindow::Clear()
 
 void DxwWindow::InitDirect3D(HWND hWnd)
 {
-	LOG_INFO("Starting Direct3D initialization");
+	LOG_DEBUG("Starting Direct3D initialization");
 	RECT clientRect;
 	GetClientRect(hWnd, &clientRect);
 
 	UINT width = clientRect.right - clientRect.left;
 	UINT height = clientRect.bottom - clientRect.top;
 
-	LOG_TRACE("Initializing Swap Chain and D3D11 Device Context");
+	LOG_DEBUG("Initializing Swap Chain and D3D11 Device Context");
 	DXGI_SWAP_CHAIN_DESC swapChainDesc = {};
 	swapChainDesc.BufferCount = 1;
 	swapChainDesc.BufferDesc.Width = width;
@@ -64,7 +64,7 @@ void DxwWindow::InitDirect3D(HWND hWnd)
 	}
 
 
-	LOG_TRACE("Initializing back buffer");
+	LOG_DEBUG("Initializing back buffer");
 	ComPtr<ID3D11Texture2D> pBackBuffer{ nullptr };
 	hr = pSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)pBackBuffer.GetAddressOf());
 	if (FAILED(hr))
@@ -73,7 +73,7 @@ void DxwWindow::InitDirect3D(HWND hWnd)
 		return;
 	}
 
-	LOG_TRACE("Creating RenderTargetView");
+	LOG_DEBUG("Creating RenderTargetView");
 	hr = pD3DDevice->CreateRenderTargetView(pBackBuffer.Get(), nullptr, pRenderTargetView.GetAddressOf());
 	if (FAILED(hr))
 	{
@@ -83,7 +83,7 @@ void DxwWindow::InitDirect3D(HWND hWnd)
 
 	pD3DDeviceContext->OMSetRenderTargets(1, pRenderTargetView.GetAddressOf(), nullptr);
 
-	LOG_TRACE("Creating D3D11 Viewport");
+	LOG_DEBUG("Creating D3D11 Viewport");
 	D3D11_VIEWPORT viewport;
 	viewport.Width = 800.0f;
 	viewport.Height = 600.0f;
@@ -94,7 +94,7 @@ void DxwWindow::InitDirect3D(HWND hWnd)
 	pD3DDeviceContext->RSSetViewports(1, &viewport);
 
 
-	LOG_TRACE("Preparing vertex data");
+	LOG_DEBUG("Preparing vertex data");
 	// buffer of vertex data
 	std::vector<Vertex> verts{};
 	verts.resize(DRAWLIB_COUNT);
@@ -123,7 +123,7 @@ void DxwWindow::InitDirect3D(HWND hWnd)
 	D3D11_SUBRESOURCE_DATA initData = {};
 	initData.pSysMem = verts.data();
 
-	LOG_TRACE("Creating vertex buffer");
+	LOG_DEBUG("Creating vertex buffer");
 	hr = pD3DDevice->CreateBuffer(&bufferDesc, &initData, pVertexBuffer.GetAddressOf());
 	if (FAILED(hr))
 	{
@@ -131,7 +131,7 @@ void DxwWindow::InitDirect3D(HWND hWnd)
 		return;
 	}
 
-	LOG_TRACE("Preparing buffer memory layout");
+	LOG_DEBUG("Preparing buffer memory layout");
 	// memory layout
 	D3D11_INPUT_ELEMENT_DESC layout[] =
 	{
@@ -140,7 +140,7 @@ void DxwWindow::InitDirect3D(HWND hWnd)
 	};
 	UINT numElements = ARRAYSIZE(layout);
 
-	LOG_TRACE("Compiling shaders");
+	LOG_DEBUG("Compiling shaders");
 	// shaders
 	ComPtr<ID3DBlob> pVSBlob{ nullptr };
 	ComPtr<ID3DBlob> pPSBlob{ nullptr };
@@ -180,7 +180,7 @@ void DxwWindow::InitDirect3D(HWND hWnd)
 		return;
 	}
 
-	LOG_TRACE("Creating Blend State");
+	LOG_DEBUG("Creating Blend State");
 	// blend state
 	D3D11_BLEND_DESC blendDesc;
 	ZeroMemory(&blendDesc, sizeof(D3D11_BLEND_DESC));
@@ -209,9 +209,9 @@ void DxwWindow::InitDirect3D(HWND hWnd)
 
 void DxwWindow::InitDirect2D()
 {
-	LOG_INFO("Starting Direct2D initialization");
+	LOG_DEBUG("Starting Direct2D initialization");
 
-	LOG_TRACE("Creating D2D1Factory");
+	LOG_DEBUG("Creating D2D1Factory");
 	HRESULT hr = D2D1CreateFactory(D2D1_FACTORY_TYPE_MULTI_THREADED, __uuidof(ID2D1Factory1), nullptr, (void**)pD2DFactory.GetAddressOf());
 	if (FAILED(hr))
 	{
@@ -219,7 +219,7 @@ void DxwWindow::InitDirect2D()
 		return;
 	}
 
-	LOG_TRACE("Creating IDXGIDevice from D3D device");
+	LOG_DEBUG("Creating IDXGIDevice from D3D device");
 	ComPtr<IDXGIDevice> pDXGIDevice{ nullptr };
 	hr = pD3DDevice->QueryInterface(__uuidof(IDXGIDevice), (void**)pDXGIDevice.GetAddressOf());
 	if (FAILED(hr))
@@ -228,7 +228,7 @@ void DxwWindow::InitDirect2D()
 		return;
 	}
 
-	LOG_TRACE("Creating Direct2D Device");
+	LOG_DEBUG("Creating Direct2D Device");
 	hr = pD2DFactory->CreateDevice(pDXGIDevice.Get(), pD2DDevice.GetAddressOf());
 	if (FAILED(hr) || pD2DDevice == nullptr)
 	{
@@ -236,7 +236,7 @@ void DxwWindow::InitDirect2D()
 		return;
 	}
 
-	LOG_TRACE("Creating Direct2D device context");
+	LOG_DEBUG("Creating Direct2D device context");
 	hr = pD2DDevice->CreateDeviceContext(D2D1_DEVICE_CONTEXT_OPTIONS_ENABLE_MULTITHREADED_OPTIMIZATIONS, pD2DDeviceContext.GetAddressOf());
 	if (FAILED(hr) || pD2DDeviceContext == nullptr)
 	{
@@ -245,7 +245,7 @@ void DxwWindow::InitDirect2D()
 	}
 	pD2DDeviceContext->SetAntialiasMode(D2D1_ANTIALIAS_MODE_ALIASED);
 
-	LOG_TRACE("Creating bitmap from DxgiSurface");
+	LOG_DEBUG("Creating bitmap from DxgiSurface");
 
 	ComPtr<ID3D11Texture2D> pBackBufferTexture{ nullptr };
 	IDXGISurface* pSurface{ nullptr };
@@ -283,7 +283,7 @@ void DxwWindow::InitDirect2D()
 
 void DxwWindow::CreateTextResources()
 {
-	LOG_TRACE("Creating text resources");
+	LOG_DEBUG("Creating text resources");
 	HRESULT hr = DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory), reinterpret_cast<IUnknown**>(pDWriteFactory.GetAddressOf()));
 
 	hr = pDWriteFactory->CreateTextFormat(
@@ -310,7 +310,7 @@ void DxwWindow::CreateTextResources()
 
 void DxwWindow::InitDirectX(HWND hWnd)
 {
-	LOG_INFO("Starting DirectX initialization");
+	LOG_DEBUG("Starting DirectX initialization");
 	InitDirect3D(hWnd);
 	InitDirect2D();
 	CreateTextResources();
