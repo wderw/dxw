@@ -44,8 +44,7 @@ public:
 
     std::shared_ptr<DxwWindow> GetWindowByID(int id)
     {
-        LOG_DEBUG("Attempting to retrieve window by id: {}", id);
-
+        LOG_TRACE("Attempting to retrieve window by id: {}", id);
         auto it = windows.find(id);
 
         if (it != windows.end())
