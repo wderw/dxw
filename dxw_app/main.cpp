@@ -9,9 +9,18 @@ HINSTANCE hDLL;
 HWND g_hDrawingPanel = nullptr;
 
 typedef void(__stdcall* DXW_InitWindowFunc)(HWND);
-typedef void(__stdcall* DXW_D3DDeviceContext_ClearFunc)();
-DXW_InitWindowFunc DXW_InitWindow = nullptr;
-DXW_D3DDeviceContext_ClearFunc DXW_D3DDeviceContext_Clear = nullptr;
+typedef void(__stdcall* DXW_D3D_ClearFunc)();
+typedef void(__stdcall* DXW_D2D_BeginDrawFunc)();
+typedef void(__stdcall* DXW_D2D_EndDrawFunc)();
+typedef void(__stdcall* DXW_D2D_ClearFunc)();
+typedef void(__stdcall* DXW_PresentFunc)(int);
+
+DXW_InitWindowFunc    DXW_InitWindow    = nullptr;
+DXW_D3D_ClearFunc     DXW_D3D_Clear     = nullptr;
+DXW_D2D_BeginDrawFunc DXW_D2D_BeginDraw = nullptr;
+DXW_D2D_EndDrawFunc   DXW_D2D_EndDraw   = nullptr;
+DXW_D2D_ClearFunc     DXW_D2D_Clear     = nullptr;
+DXW_PresentFunc       DXW_Present       = nullptr;
 
 const std::wstring libraryName = L"dxw.dll";
 void CreateDrawingPanel(HWND parentHwnd);
@@ -50,27 +59,54 @@ bool LoadWrapperDll()
         {
             DWORD error = GetLastError();
             TCHAR errorMsg[256];
-            _stprintf_s(errorMsg, _T("GetProcAddress failed. Error code: %lu"), error);
+            _stprintf_s(errorMsg, _T("DXW_InitWindow GetProcAddress failed. Error code: %lu"), error);
             MessageBox(nullptr, errorMsg, _T("Error"), MB_OK);
         }
-        else
-        {
-            MessageBox(nullptr, L"DXW_InitWindow Loaded Correctly!", _T("Error"), MB_OK);
-        }
 
-        DXW_D3DDeviceContext_Clear = (DXW_D3DDeviceContext_ClearFunc)GetProcAddress(hDLL, "DXW_D3DDeviceContext_Clear");
-        if (!DXW_D3DDeviceContext_Clear)
+        DXW_D3D_Clear = (DXW_D3D_ClearFunc)GetProcAddress(hDLL, "DXW_D3D_Clear");
+        if (!DXW_D3D_Clear)
         {
             DWORD error = GetLastError();
             TCHAR errorMsg[256];
-            _stprintf_s(errorMsg, _T("GetProcAddress failed. Error code: %lu"), error);
+            _stprintf_s(errorMsg, _T("DXW_D3D_Clear GetProcAddress failed. Error code: %lu"), error);
             MessageBox(nullptr, errorMsg, _T("Error"), MB_OK);
         }
-        else
+
+        DXW_D2D_Clear = (DXW_D2D_ClearFunc)GetProcAddress(hDLL, "DXW_D2D_Clear");
+        if (!DXW_D2D_Clear)
         {
-            MessageBox(nullptr, L"DXW_D3DDeviceContext_Clear Loaded Correctly!", _T("Error"), MB_OK);
+            DWORD error = GetLastError();
+            TCHAR errorMsg[256];
+            _stprintf_s(errorMsg, _T("DXW_D2D_Clear GetProcAddress failed. Error code: %lu"), error);
+            MessageBox(nullptr, errorMsg, _T("Error"), MB_OK);
         }
 
+        DXW_Present = (DXW_PresentFunc)GetProcAddress(hDLL, "DXW_Present");
+        if (!DXW_Present)
+        {
+            DWORD error = GetLastError();
+            TCHAR errorMsg[256];
+            _stprintf_s(errorMsg, _T("DXW_Present GetProcAddress failed. Error code: %lu"), error);
+            MessageBox(nullptr, errorMsg, _T("Error"), MB_OK);
+        }
+
+        DXW_D2D_BeginDraw = (DXW_D2D_BeginDrawFunc)GetProcAddress(hDLL, "DXW_D2D_BeginDraw");
+        if (!DXW_D2D_BeginDraw)
+        {
+            DWORD error = GetLastError();
+            TCHAR errorMsg[256];
+            _stprintf_s(errorMsg, _T("DXW_D2D_BeginDraw GetProcAddress failed. Error code: %lu"), error);
+            MessageBox(nullptr, errorMsg, _T("Error"), MB_OK);
+        }
+
+        DXW_D2D_EndDraw = (DXW_D2D_EndDrawFunc)GetProcAddress(hDLL, "DXW_D2D_EndDraw");
+        if (!DXW_D2D_EndDraw)
+        {
+            DWORD error = GetLastError();
+            TCHAR errorMsg[256];
+            _stprintf_s(errorMsg, _T("DXW_D2D_EndDraw GetProcAddress failed. Error code: %lu"), error);
+            MessageBox(nullptr, errorMsg, _T("Error"), MB_OK);
+        }
     }
 
     std::cout << "Wrapper loaded successfully!" << std::endl;
@@ -150,7 +186,18 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     UpdateWindow(hWndMain);
 
     DXW_InitWindow(g_hDrawingPanel);
-    DXW_D3DDeviceContext_Clear();
+
+    DXW_D2D_BeginDraw();
+    DXW_D2D_Clear();
+    DXW_D2D_EndDraw();
+
+    DXW_D3D_Clear();
+
+    DXW_D2D_BeginDraw();
+    DXW_D2D_Clear();
+    DXW_D2D_EndDraw();
+
+    DXW_Present(1);
 
     MSG msg = {};
     while (GetMessage(&msg, nullptr, 0, 0))

@@ -24,8 +24,14 @@ public:
 	void InitDirect3D(HWND);
 	void InitDirect2D();
 	void CreateTextResources();
-	void Clear();
+
 	int GetId() { return id; }
+
+	void D3D_Clear();
+	void D2D_Clear();
+	void D2D_BeginDraw();
+	void D2D_EndDraw();
+	void DX_Present(int);
 
 private:
 	int id{-1};

@@ -14,12 +14,31 @@ DxwWindow::DxwWindow()
 	id = instanceCounter++;
 }
 
-void DxwWindow::Clear()
+void DxwWindow::D3D_Clear()
 {
-	LOG_WARN("CLEAR CALLED");
 	float clearColor[4] = { 0.9, 0.14, 0.12, 1.0f };
 	pD3DDeviceContext->ClearRenderTargetView(pRenderTargetView.Get(), clearColor);
-	pSwapChain->Present(1, 0); // Vsync enabled
+}
+
+void DxwWindow::D2D_Clear()
+{
+	pD2DDeviceContext->Clear(D2D1::ColorF(0, 1, 0, 1));
+}
+
+void DxwWindow::D2D_BeginDraw()
+{
+	pD2DDeviceContext->BeginDraw();
+}
+
+void DxwWindow::D2D_EndDraw()
+{
+	pD2DDeviceContext->EndDraw();
+}
+
+void DxwWindow::DX_Present(int vsync = 1)
+{
+	// 1 = vsync enabled, 0 = immediate presentation
+	pSwapChain->Present(vsync, 0);
 }
 
 void DxwWindow::InitDirect3D(HWND hWnd)

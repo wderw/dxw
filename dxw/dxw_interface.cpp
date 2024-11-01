@@ -8,7 +8,7 @@
 namespace dxw
 {
 
-HRESULT DXW_InitWindow(HWND hWnd)
+int DXW_InitWindow(HWND hWnd)
 {
 	uintptr_t hwndValue = reinterpret_cast<uintptr_t>(hWnd);
 	LOG_INFO("DXW_InitWindow called for window or control handle (HWND): {}", hwndValue);
@@ -21,9 +21,34 @@ HRESULT DXW_InitWindow(HWND hWnd)
 	return id;
 }
 
-void DXW_D3DDeviceContext_Clear()
+void DXW_Present(int vsync = 1)
 {
-	DxwSharedContext::GetInstance().GetWindowByIndex(0)->Clear();
+	LOG_DEBUG("DXW_Present called");
+	DxwSharedContext::GetInstance().GetWindowByIndex(0)->DX_Present(vsync);
+}
+
+void DXW_D3D_Clear()
+{
+	LOG_DEBUG("DXW_D3D_Clear called");
+	DxwSharedContext::GetInstance().GetWindowByIndex(0)->D3D_Clear();
+}
+
+void DXW_D2D_Clear()
+{
+	LOG_DEBUG("DXW_D2D_Clear called");
+	DxwSharedContext::GetInstance().GetWindowByIndex(0)->D2D_Clear();
+}
+
+void DXW_D2D_BeginDraw()
+{
+	LOG_DEBUG("DXW_D2D_BeginDraw called");
+	DxwSharedContext::GetInstance().GetWindowByIndex(0)->D2D_BeginDraw();
+}
+
+void DXW_D2D_EndDraw()
+{
+	LOG_DEBUG("DXW_D2D_EndDraw called");
+	DxwSharedContext::GetInstance().GetWindowByIndex(0)->D2D_EndDraw();
 }
 
 }
