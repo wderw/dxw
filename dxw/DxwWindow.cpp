@@ -43,7 +43,7 @@ void DxwWindow::DX_Present(int vsync = 1)
 
 void DxwWindow::InitDirect3D(HWND hWnd)
 {
-	LOG_DEBUG("Starting Direct3D initialization");
+	LOG_DEBUG("Direct3D initialization started");
 	RECT clientRect;
 	GetClientRect(hWnd, &clientRect);
 
@@ -228,7 +228,7 @@ void DxwWindow::InitDirect3D(HWND hWnd)
 
 void DxwWindow::InitDirect2D()
 {
-	LOG_DEBUG("Starting Direct2D initialization");
+	LOG_DEBUG("Direct2D initialization started");
 
 	LOG_DEBUG("Creating D2D1Factory");
 	HRESULT hr = D2D1CreateFactory(D2D1_FACTORY_TYPE_MULTI_THREADED, __uuidof(ID2D1Factory1), nullptr, (void**)pD2DFactory.GetAddressOf());
@@ -329,7 +329,7 @@ void DxwWindow::CreateTextResources()
 
 void DxwWindow::InitDirectX(HWND hWnd)
 {
-	LOG_DEBUG("Starting DirectX initialization");
+	LOG_DEBUG("DirectX initialization started");
 	InitDirect3D(hWnd);
 	InitDirect2D();
 	CreateTextResources();

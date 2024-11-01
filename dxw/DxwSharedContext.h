@@ -1,5 +1,7 @@
 #pragma once
 
+#include <unordered_map>
+
 #include "Log.h"
 #include "DxwWindow.h"
 
@@ -16,30 +18,38 @@ public:
 
     void RegisterWindow(std::shared_ptr<DxwWindow> window)
     {
-        windows.emplace_back(window);
-        LOG_INFO("Registered window with id: {}. Current number of windows: {}", window->GetId(), windows.size());
+        int id = window->GetId();
+        auto result = windows.insert({ id, window });
+        if (result.second)
+        {
+            LOG_INFO("Registered window with id: {}. Current number of windows: {}", id, windows.size());
+        }
+        else
+        {
+            LOG_ERROR("DxwWindow with id {} was already registered!", id);
+        }
     }
 
-    std::shared_ptr<DxwWindow> GetWindowByIndex(int index)
+    std::shared_ptr<DxwWindow> GetWindowByID(int id)
     {
-        return windows[index];
+        return windows[id];
     }
 
 private:
     DxwSharedContext()
     {
-        LOG_INFO("Shared context created");
+        LOG_DEBUG("Shared context created");
     }
 
     ~DxwSharedContext()
     {
-        LOG_INFO("Shared context destroyed");
+        LOG_DEBUG("Shared context destroyed");
     }
 
     DxwSharedContext(const DxwSharedContext&) = delete;
     DxwSharedContext& operator=(const DxwSharedContext&) = delete;
 
-    std::vector<std::shared_ptr<DxwWindow>> windows{};
+    std::unordered_map<int, std::shared_ptr<DxwWindow>> windows;
 
 public:
     constexpr static const char* vertexShaderSource = R"(

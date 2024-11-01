@@ -9,6 +9,9 @@
 #include <d2d1helper.h>
 #include <dwrite.h>
 #include <wrl.h> // ComPtr
+#include <unordered_map>
+#include <memory>
+#include <functional>
 
 using Microsoft::WRL::ComPtr;
 
@@ -32,6 +35,11 @@ public:
 	void D2D_BeginDraw();
 	void D2D_EndDraw();
 	void DX_Present(int);
+
+	bool operator==(const DxwWindow& other) const
+	{
+		return id == other.id;
+	}
 
 private:
 	int id{-1};

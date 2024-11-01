@@ -24,31 +24,31 @@ int DXW_InitWindow(HWND hWnd)
 void DXW_Present(int vsync = 1)
 {
 	LOG_DEBUG("DXW_Present called");
-	DxwSharedContext::GetInstance().GetWindowByIndex(0)->DX_Present(vsync);
+	DxwSharedContext::GetInstance().GetWindowByID(0)->DX_Present(vsync);
 }
 
 void DXW_D3D_Clear()
 {
 	LOG_DEBUG("DXW_D3D_Clear called");
-	DxwSharedContext::GetInstance().GetWindowByIndex(0)->D3D_Clear();
+	DxwSharedContext::GetInstance().GetWindowByID(0)->D3D_Clear();
 }
 
 void DXW_D2D_Clear()
 {
 	LOG_DEBUG("DXW_D2D_Clear called");
-	DxwSharedContext::GetInstance().GetWindowByIndex(0)->D2D_Clear();
+	DxwSharedContext::GetInstance().GetWindowByID(0)->D2D_Clear();
 }
 
 void DXW_D2D_BeginDraw()
 {
 	LOG_DEBUG("DXW_D2D_BeginDraw called");
-	DxwSharedContext::GetInstance().GetWindowByIndex(0)->D2D_BeginDraw();
+	DxwSharedContext::GetInstance().GetWindowByID(0)->D2D_BeginDraw();
 }
 
 void DXW_D2D_EndDraw()
 {
 	LOG_DEBUG("DXW_D2D_EndDraw called");
-	DxwSharedContext::GetInstance().GetWindowByIndex(0)->D2D_EndDraw();
+	DxwSharedContext::GetInstance().GetWindowByID(0)->D2D_EndDraw();
 }
 
 }
