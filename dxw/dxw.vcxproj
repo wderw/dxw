@@ -166,6 +166,7 @@
     <ClInclude Include="dxw_interface.h" />
     <ClInclude Include="Log.h" />
     <ClInclude Include="TransformBuffer.h" />
+    <ClInclude Include="Utils.h" />
     <ClInclude Include="Vertex.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
