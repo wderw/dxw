@@ -28,11 +28,40 @@ public:
         {
             LOG_ERROR("DxwWindow with id {} was already registered!", id);
         }
+        SetTargetId(id);
+    }
+
+    void SetTargetId(int newId)
+    {
+        LOG_DEBUG("Setting new drawing target. Old target id: {}, new target id: {}", targetId, newId);
+        targetId = newId;
+    }
+
+    int GetTargetId()
+    {
+        return targetId;
     }
 
     std::shared_ptr<DxwWindow> GetWindowByID(int id)
     {
-        return windows[id];
+        LOG_DEBUG("Attempting to retrieve window by id: {}", id);
+
+        auto it = windows.find(id);
+
+        if (it != windows.end())
+        {
+            return it->second;
+        }
+        else
+        {
+            LOG_ERROR("Error: window with id: {} was not found!", id);
+            return nullptr;
+        }
+    }
+
+    std::shared_ptr<DxwWindow> GetCurrentWindow()
+    {
+        return GetWindowByID(GetTargetId());
     }
 
 private:
@@ -50,6 +79,7 @@ private:
     DxwSharedContext& operator=(const DxwSharedContext&) = delete;
 
     std::unordered_map<int, std::shared_ptr<DxwWindow>> windows;
+    int targetId{ -1 };
 
 public:
     constexpr static const char* vertexShaderSource = R"(

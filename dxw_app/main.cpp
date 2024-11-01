@@ -8,19 +8,22 @@ HWND hWndMain;
 HINSTANCE hDLL;
 HWND g_hDrawingPanel = nullptr;
 
-typedef void(__stdcall* DXW_InitWindowFunc)(HWND);
+typedef int(__stdcall*  DXW_InitWindowFunc)(HWND);
+typedef void(__stdcall* DXW_SetTargetWindowFunc)(int);
 typedef void(__stdcall* DXW_D3D_ClearFunc)();
 typedef void(__stdcall* DXW_D2D_BeginDrawFunc)();
 typedef void(__stdcall* DXW_D2D_EndDrawFunc)();
 typedef void(__stdcall* DXW_D2D_ClearFunc)();
 typedef void(__stdcall* DXW_PresentFunc)(int);
 
-DXW_InitWindowFunc    DXW_InitWindow    = nullptr;
-DXW_D3D_ClearFunc     DXW_D3D_Clear     = nullptr;
-DXW_D2D_BeginDrawFunc DXW_D2D_BeginDraw = nullptr;
-DXW_D2D_EndDrawFunc   DXW_D2D_EndDraw   = nullptr;
-DXW_D2D_ClearFunc     DXW_D2D_Clear     = nullptr;
-DXW_PresentFunc       DXW_Present       = nullptr;
+
+DXW_SetTargetWindowFunc DXW_SetTargetWindow = nullptr;
+DXW_InitWindowFunc      DXW_InitWindow      = nullptr;
+DXW_D3D_ClearFunc       DXW_D3D_Clear       = nullptr;
+DXW_D2D_BeginDrawFunc   DXW_D2D_BeginDraw   = nullptr;
+DXW_D2D_EndDrawFunc     DXW_D2D_EndDraw     = nullptr;
+DXW_D2D_ClearFunc       DXW_D2D_Clear       = nullptr;
+DXW_PresentFunc         DXW_Present         = nullptr;
 
 const std::wstring libraryName = L"dxw.dll";
 void CreateDrawingPanel(HWND parentHwnd);
@@ -107,6 +110,15 @@ bool LoadWrapperDll()
             _stprintf_s(errorMsg, _T("DXW_D2D_EndDraw GetProcAddress failed. Error code: %lu"), error);
             MessageBox(nullptr, errorMsg, _T("Error"), MB_OK);
         }
+
+        DXW_SetTargetWindow = (DXW_SetTargetWindowFunc)GetProcAddress(hDLL, "DXW_SetTargetWindow");
+        if (!DXW_SetTargetWindow)
+        {
+            DWORD error = GetLastError();
+            TCHAR errorMsg[256];
+            _stprintf_s(errorMsg, _T("DXW_SetTargetWindow GetProcAddress failed. Error code: %lu"), error);
+            MessageBox(nullptr, errorMsg, _T("Error"), MB_OK);
+        }
     }
 
     std::cout << "Wrapper loaded successfully!" << std::endl;
@@ -185,8 +197,10 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     ShowWindow(hWndMain, nCmdShow);
     UpdateWindow(hWndMain);
 
-    DXW_InitWindow(g_hDrawingPanel);
+    int id = DXW_InitWindow(g_hDrawingPanel);
+    std::cout << "Window allocated id was: " << id << std::endl;
 
+    DXW_SetTargetWindow(id); // redundant but fine - target window is always the last added window
     DXW_D2D_BeginDraw();
     DXW_D2D_Clear();
     DXW_D2D_EndDraw();
