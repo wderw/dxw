@@ -145,14 +145,9 @@ void DxwWindow::RunThreadedTest()
 			UINT offset = 0;
 			pD3DDeviceContext->IASetInputLayout(pInputLayout.Get());
 			pD3DDeviceContext->IASetVertexBuffers(0, 1, pVertexBuffer.GetAddressOf(), &stride, &offset);
-			pD3DDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINESTRIP);
 
 			pD3DDeviceContext->VSSetShader(pVertexShader.Get(), nullptr, 0);
 			pD3DDeviceContext->PSSetShader(pPixelShader.Get(), nullptr, 0);
-
-			D3D_SetTranslation(0, 0, 1);
-			D3D_RecalculateTransformMatrix();
-			D3D_SetPerspectiveProjectionMatrix(DirectX::XM_PIDIV4, static_cast<float>(windowWidth) / static_cast<float>(windowHeight), 0.01f, 100.0f);
 
 			ZeroMemory(&bufferDesc, sizeof(D3D11_BUFFER_DESC));
 			bufferDesc.Usage = D3D11_USAGE_DEFAULT;
@@ -185,6 +180,8 @@ void DxwWindow::RunThreadedTest()
 
 				pD3DDeviceContext->ClearDepthStencilView(pDepthStencilView.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
 
+				D3D_SetPerspectiveProjectionMatrix(DirectX::XM_PIDIV4, static_cast<float>(windowWidth) / static_cast<float>(windowHeight), 0.01f, 100.0f);
+				D3D_SetTranslation(0, 0, 1);
 				D3D_SetScale(1.5f, 1.5f, 1.5f);
 				D3D_SetRotation(fi, fi + fi / 2, 0);
 				D3D_RecalculateTransformMatrix();
