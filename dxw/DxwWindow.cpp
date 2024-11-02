@@ -56,7 +56,7 @@ void DxwWindow::RunThreadedTest()
 			UINT offset = 0;
 			pD3DDeviceContext->IASetInputLayout(pInputLayout.Get());
 			pD3DDeviceContext->IASetVertexBuffers(0, 1, pVertexBuffer.GetAddressOf(), &stride, &offset);
-			pD3DDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+			pD3DDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINESTRIP);
 
 			pD3DDeviceContext->VSSetShader(pVertexShader.Get(), nullptr, 0);
 			pD3DDeviceContext->PSSetShader(pPixelShader.Get(), nullptr, 0);
@@ -97,13 +97,18 @@ void DxwWindow::RunThreadedTest()
 			pD3DDeviceContext->UpdateSubresource(transformBuffer.Get(), 0, nullptr, &transformBufferData, 0, 0);
 
 			// To disable back-face culling
-			D3D11_RASTERIZER_DESC rasterDesc = {};
-			rasterDesc.FillMode = D3D11_FILL_SOLID;
-			rasterDesc.CullMode = D3D11_CULL_NONE; // Disable culling
+			//D3D11_RASTERIZER_DESC rasterDesc = {};
+			//rasterDesc.FillMode = D3D11_FILL_SOLID;
+			//rasterDesc.CullMode = D3D11_CULL_NONE; // Disable culling
 
-			ID3D11RasterizerState* rasterState;
-			pD3DDevice->CreateRasterizerState(&rasterDesc, &rasterState);
-			pD3DDeviceContext->RSSetState(rasterState);
+			//ID3D11RasterizerState* rasterState;
+			//pD3DDevice->CreateRasterizerState(&rasterDesc, &rasterState);
+			//pD3DDeviceContext->RSSetState(rasterState);
+
+			pD2DDeviceContext->CreateSolidColorBrush(
+				D2D1::ColorF(D2D1::ColorF(0, 1, 0, 1.0f)),
+				pDefaultBrush.GetAddressOf()
+			);
 
 			while (true)
 			{
@@ -113,8 +118,7 @@ void DxwWindow::RunThreadedTest()
 				// Clear the back buffer and depth buffer
 				pD3DDeviceContext->ClearDepthStencilView(pDepthStencilView.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
 
-
-				DirectX::XMMATRIX scaleMatrix = DirectX::XMMatrixScaling(1, 1, 1);
+				DirectX::XMMATRIX scaleMatrix = DirectX::XMMatrixScaling(1.2f, 1.2f, 1.2f);
 				DirectX::XMMATRIX rotationMatrix = DirectX::XMMatrixRotationRollPitchYaw(DirectX::XMConvertToRadians(fi), DirectX::XMConvertToRadians(fi + fi/2), DirectX::XMConvertToRadians(0));
 				DirectX::XMMATRIX translationMatrix = DirectX::XMMatrixTranslation(0, 0, 1);
 				DirectX::XMMATRIX transformMatrix = XMMatrixMultiply(scaleMatrix, rotationMatrix);
@@ -123,7 +127,35 @@ void DxwWindow::RunThreadedTest()
 				transformBufferData.projection = DirectX::XMMatrixTranspose(projectionMatrix);
 				pD3DDeviceContext->UpdateSubresource(transformBuffer.Get(), 0, nullptr, &transformBufferData, 0, 0);
 
+				pD3DDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINESTRIP);
 				pD3DDeviceContext->Draw(12, 0);
+
+				scaleMatrix = DirectX::XMMatrixScaling(1, 1, 1);
+				rotationMatrix = DirectX::XMMatrixRotationRollPitchYaw(DirectX::XMConvertToRadians(-fi - fi/2), DirectX::XMConvertToRadians(-fi), DirectX::XMConvertToRadians(0));
+				translationMatrix = DirectX::XMMatrixTranslation(0, 0, 1);
+				transformMatrix = XMMatrixMultiply(scaleMatrix, rotationMatrix);
+				transformMatrix = DirectX::XMMatrixMultiply(transformMatrix, translationMatrix);
+				transformBufferData.transform = DirectX::XMMatrixTranspose(transformMatrix); // transpose needed for HLSL
+				transformBufferData.projection = DirectX::XMMatrixTranspose(projectionMatrix);
+				pD3DDeviceContext->UpdateSubresource(transformBuffer.Get(), 0, nullptr, &transformBufferData, 0, 0);
+
+				pD3DDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+				pD3DDeviceContext->Draw(12, 0);
+
+				D2D_BeginDraw();
+
+				wchar_t fpsText[80] = L"TEST test za¿ó³æ gêœl¹ jaŸñ The quick brown fox jumps over the lazy dog";
+				D2D1_RECT_F textRect = D2D1::RectF(0, 0, 250, 50);
+				pD2DDeviceContext->DrawTextW(
+					fpsText,
+					wcslen(fpsText),
+					pDefaultTextFormat.Get(),
+					textRect,
+					pDefaultBrush.Get()
+				);
+
+				D2D_EndDraw();
+
 				DX_Present(1);
 			}
 		}).detach();
