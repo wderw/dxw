@@ -48,11 +48,7 @@ void DxwWindow::RunThreadedTest()
 {
 	std::thread([&]()
 		{
-			bool flag = false;
-			float colorRed[4] = { 0.7, 0.14, 0.12, 1.0f };
-			float colorGreen[4] = { 0.14, 0.7, 0.12, 1.0f };
 			float fi = 0;
-
 
 			// lines
 			constexpr static int DRAWLIB_COUNT{ 100000 };
@@ -78,10 +74,10 @@ void DxwWindow::RunThreadedTest()
 			const float factor = 0.1f;
 			std::vector<Vertex> vertices =
 			{
-				{ DirectX::XMFLOAT3(0.0f * factor,  1.0f * factor,  0.0f * factor), DirectX::XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f) }, // A (Top)
-				{ DirectX::XMFLOAT3(1.0f * factor, -1.0f * factor, -1.0f * factor), DirectX::XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f) }, // B (Bottom-Right)
-				{ DirectX::XMFLOAT3(-1.0f * factor, -1.0f * factor, -1.0f * factor), DirectX::XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f) }, // C (Bottom-Left)
-				{ DirectX::XMFLOAT3(0.0f * factor, -1.0f * factor,  1.0f * factor), DirectX::XMFLOAT4(1.0f, 1.0f, 0.0f, 1.0f) }  // D (Back)
+				{ DirectX::XMFLOAT3(1 * factor,  1 * factor,  1 * factor), DirectX::XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f) }, // A (Top)
+				{ DirectX::XMFLOAT3(1 * factor, -1 * factor, -1 * factor), DirectX::XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f) }, // B (Bottom-Right)
+				{ DirectX::XMFLOAT3(-1 * factor, 1 * factor, -1 * factor), DirectX::XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f) }, // C (Bottom-Left)
+				{ DirectX::XMFLOAT3(-1 * factor, -1 * factor,  1 * factor), DirectX::XMFLOAT4(1.0f, 1.0f, 0.0f, 1.0f) }  // D (Back)
 			};
 
 			std::vector<Vertex> verts;
@@ -139,7 +135,6 @@ void DxwWindow::RunThreadedTest()
 
 			ComPtr<ID3D11Buffer> transformBuffer = nullptr;
 
-			//D3D11_BUFFER_DESC bufferDesc;
 			ZeroMemory(&bufferDesc, sizeof(D3D11_BUFFER_DESC));
 			bufferDesc.Usage = D3D11_USAGE_DEFAULT;
 			bufferDesc.ByteWidth = sizeof(TransformBuffer);
@@ -167,7 +162,7 @@ void DxwWindow::RunThreadedTest()
 
 			while (true)
 			{
-				fi += 0.5f;
+				fi += 1.0f;
 				D3D_Clear();
 
 				D2D_BeginDraw();
@@ -176,20 +171,20 @@ void DxwWindow::RunThreadedTest()
 
 				pD3DDeviceContext->ClearDepthStencilView(pDepthStencilView.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
 
-				//DirectX::XMMATRIX scaleMatrix = DirectX::XMMatrixScaling(1.5f, 1.5f, 1.5f);
-				//DirectX::XMMATRIX rotationMatrix = DirectX::XMMatrixRotationRollPitchYaw(DirectX::XMConvertToRadians(fi), DirectX::XMConvertToRadians(fi + fi/2), DirectX::XMConvertToRadians(0));
-				//DirectX::XMMATRIX translationMatrix = DirectX::XMMatrixTranslation(0, 0, 1);
-				//DirectX::XMMATRIX transformMatrix = XMMatrixMultiply(scaleMatrix, rotationMatrix);
-				//transformMatrix = DirectX::XMMatrixMultiply(transformMatrix, translationMatrix);
-				//transformBufferData.transform = DirectX::XMMatrixTranspose(transformMatrix); // transpose needed for HLSL
-				//transformBufferData.projection = DirectX::XMMatrixTranspose(projectionMatrix);
-				//pD3DDeviceContext->UpdateSubresource(transformBuffer.Get(), 0, nullptr, &transformBufferData, 0, 0);
+				DirectX::XMMATRIX scaleMatrix = DirectX::XMMatrixScaling(1.5f, 1.5f, 1.5f);
+				DirectX::XMMATRIX rotationMatrix = DirectX::XMMatrixRotationRollPitchYaw(DirectX::XMConvertToRadians(fi), DirectX::XMConvertToRadians(fi + fi/2), DirectX::XMConvertToRadians(0));
+				DirectX::XMMATRIX translationMatrix = DirectX::XMMatrixTranslation(0, 0, 1);
+				DirectX::XMMATRIX transformMatrix = XMMatrixMultiply(scaleMatrix, rotationMatrix);
+				transformMatrix = DirectX::XMMatrixMultiply(transformMatrix, translationMatrix);
+				transformBufferData.transform = DirectX::XMMatrixTranspose(transformMatrix); // transpose needed for HLSL
+				transformBufferData.projection = DirectX::XMMatrixTranspose(projectionMatrix);
+				pD3DDeviceContext->UpdateSubresource(transformBuffer.Get(), 0, nullptr, &transformBufferData, 0, 0);
 
-				//pD3DDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINESTRIP);
-				//pD3DDeviceContext->Draw(12, 0);
+				pD3DDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINESTRIP);
+				pD3DDeviceContext->Draw(12, 0);
 
 				scaleMatrix = DirectX::XMMatrixScaling(1.2f, 1.2f, 1.2f);
-				rotationMatrix = DirectX::XMMatrixRotationRollPitchYaw(DirectX::XMConvertToRadians(-fi - fi/2), DirectX::XMConvertToRadians(-fi), DirectX::XMConvertToRadians(0));
+				rotationMatrix = DirectX::XMMatrixRotationRollPitchYaw(DirectX::XMConvertToRadians(fi/3), DirectX::XMConvertToRadians(fi*1.2f), DirectX::XMConvertToRadians(fi/2));
 				translationMatrix = DirectX::XMMatrixTranslation(0, 0, 1);
 				transformMatrix = XMMatrixMultiply(scaleMatrix, rotationMatrix);
 				transformMatrix = DirectX::XMMatrixMultiply(transformMatrix, translationMatrix);
