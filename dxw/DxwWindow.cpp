@@ -1,4 +1,5 @@
 #include <thread>
+#include <array>
 
 #include "Log.h"
 #include "DxwWindow.h"
@@ -52,6 +53,28 @@ void DxwWindow::RunThreadedTest()
 			float colorGreen[4] = { 0.14, 0.7, 0.12, 1.0f };
 			float fi = 0;
 
+
+			// lines
+			constexpr static int DRAWLIB_COUNT{ 100000 };
+			std::vector<Vertex> lineVerts{};
+			lineVerts.resize(DRAWLIB_COUNT);
+			for (size_t i = 0; i < DRAWLIB_COUNT; ++i)
+			{
+				float x = Utils::ConvertPixelToNDCX(0, 800, 800.0f / 600.0f);
+				float y = Utils::ConvertPixelToNDCY(0, 600);
+				lineVerts[i].position = DirectX::XMFLOAT3(x, y, 0.0f);
+				lineVerts[i].color = DirectX::XMFLOAT4(1, 0, 0, 1);
+			}
+
+			for (size_t i = 0; i < DRAWLIB_COUNT; i += 2)
+			{
+				float x = Utils::ConvertPixelToNDCX(std::rand() % 800, 800, 800.0f / 600.0f);
+				float y = Utils::ConvertPixelToNDCY(std::rand() % 600, 600);
+				lineVerts[i].position = DirectX::XMFLOAT3(x, y, 0.0f);
+				lineVerts[i + 1].color = DirectX::XMFLOAT4(Utils::RandomFloat(-1.0f, 1.0f), Utils::RandomFloat(-1.0f, 1.0f), Utils::RandomFloat(-1.0f, 1.0f), 1);
+			}
+
+			// tetrahedrons
 			const float factor = 0.1f;
 			std::vector<Vertex> vertices =
 			{
@@ -63,27 +86,11 @@ void DxwWindow::RunThreadedTest()
 
 			std::vector<Vertex> verts;
 			verts.reserve(12);
-
-			// Face ABC
-			verts.push_back(vertices[0]); // A
-			verts.push_back(vertices[1]); // B
-			verts.push_back(vertices[2]); // C
-
-			// Face ABD
-			verts.push_back(vertices[0]); // A
-			verts.push_back(vertices[1]); // B
-			verts.push_back(vertices[3]); // D
-
-			// Face ACD
-			verts.push_back(vertices[0]); // A
-			verts.push_back(vertices[2]); // C
-			verts.push_back(vertices[3]); // D
-
-			// Face BCD
-			verts.push_back(vertices[1]); // B
-			verts.push_back(vertices[2]); // C
-			verts.push_back(vertices[3]); // D
-
+			std::array<int, 12> order = {0,1,2,0,1,3,0,2,3,1,2,3};
+			for (int i : order)
+			{
+				verts.push_back(vertices[i]);
+			}
 
 			D3D11_BUFFER_DESC bufferDesc = {};
 			bufferDesc.Usage = D3D11_USAGE_DEFAULT;
@@ -167,20 +174,19 @@ void DxwWindow::RunThreadedTest()
 				pD2DDeviceContext->FillRoundedRectangle(D2D1::RoundedRect(D2D1::RectF(250, 250, 600, 400), 15.0f, 15.0f), pDefaultBrush2.Get());
 				D2D_EndDraw();
 
-				// Clear the back buffer and depth buffer
 				pD3DDeviceContext->ClearDepthStencilView(pDepthStencilView.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
 
-				DirectX::XMMATRIX scaleMatrix = DirectX::XMMatrixScaling(1.5f, 1.5f, 1.5f);
-				DirectX::XMMATRIX rotationMatrix = DirectX::XMMatrixRotationRollPitchYaw(DirectX::XMConvertToRadians(fi), DirectX::XMConvertToRadians(fi + fi/2), DirectX::XMConvertToRadians(0));
-				DirectX::XMMATRIX translationMatrix = DirectX::XMMatrixTranslation(0, 0, 1);
-				DirectX::XMMATRIX transformMatrix = XMMatrixMultiply(scaleMatrix, rotationMatrix);
-				transformMatrix = DirectX::XMMatrixMultiply(transformMatrix, translationMatrix);
-				transformBufferData.transform = DirectX::XMMatrixTranspose(transformMatrix); // transpose needed for HLSL
-				transformBufferData.projection = DirectX::XMMatrixTranspose(projectionMatrix);
-				pD3DDeviceContext->UpdateSubresource(transformBuffer.Get(), 0, nullptr, &transformBufferData, 0, 0);
+				//DirectX::XMMATRIX scaleMatrix = DirectX::XMMatrixScaling(1.5f, 1.5f, 1.5f);
+				//DirectX::XMMATRIX rotationMatrix = DirectX::XMMatrixRotationRollPitchYaw(DirectX::XMConvertToRadians(fi), DirectX::XMConvertToRadians(fi + fi/2), DirectX::XMConvertToRadians(0));
+				//DirectX::XMMATRIX translationMatrix = DirectX::XMMatrixTranslation(0, 0, 1);
+				//DirectX::XMMATRIX transformMatrix = XMMatrixMultiply(scaleMatrix, rotationMatrix);
+				//transformMatrix = DirectX::XMMatrixMultiply(transformMatrix, translationMatrix);
+				//transformBufferData.transform = DirectX::XMMatrixTranspose(transformMatrix); // transpose needed for HLSL
+				//transformBufferData.projection = DirectX::XMMatrixTranspose(projectionMatrix);
+				//pD3DDeviceContext->UpdateSubresource(transformBuffer.Get(), 0, nullptr, &transformBufferData, 0, 0);
 
-				pD3DDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINESTRIP);
-				pD3DDeviceContext->Draw(12, 0);
+				//pD3DDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINESTRIP);
+				//pD3DDeviceContext->Draw(12, 0);
 
 				scaleMatrix = DirectX::XMMatrixScaling(1.2f, 1.2f, 1.2f);
 				rotationMatrix = DirectX::XMMatrixRotationRollPitchYaw(DirectX::XMConvertToRadians(-fi - fi/2), DirectX::XMConvertToRadians(-fi), DirectX::XMConvertToRadians(0));
@@ -256,7 +262,6 @@ void DxwWindow::InitDirect3D(HWND hWnd)
 		return;
 	}
 
-
 	LOG_DEBUG("Initializing back buffer");
 	ComPtr<ID3D11Texture2D> pBackBuffer{ nullptr };
 	hr = pSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)pBackBuffer.GetAddressOf());
@@ -285,7 +290,6 @@ void DxwWindow::InitDirect3D(HWND hWnd)
 	viewport.TopLeftX = 0.0f;
 	viewport.TopLeftY = 0.0f;
 	pD3DDeviceContext->RSSetViewports(1, &viewport);
-
 
 	// Create the depth buffer description
 	D3D11_TEXTURE2D_DESC depthStencilDesc = {};
@@ -316,28 +320,6 @@ void DxwWindow::InitDirect3D(HWND hWnd)
 
 	// Bind the depth stencil view to the output merger stage
 	pD3DDeviceContext->OMSetRenderTargets(1, pRenderTargetView.GetAddressOf(), pDepthStencilView.Get());
-
-
-	LOG_DEBUG("Preparing vertex data");
-	/* buffer of vertex data
-	std::vector<Vertex> verts{};
-	verts.resize(DRAWLIB_COUNT);
-	for (size_t i = 0; i < DRAWLIB_COUNT; ++i)
-	{
-		float x = Utils::ConvertPixelToNDCX(0, 800, 800.0f / 600.0f);
-		float y = Utils::ConvertPixelToNDCY(0, 600);
-		verts[i].position = DirectX::XMFLOAT3(x, y, 0.0f);
-		verts[i].color = DirectX::XMFLOAT4(1, 0, 0, 1);
-	}
-
-	for (size_t i = 0; i < DRAWLIB_COUNT; i += 2)
-	{
-		float x = Utils::ConvertPixelToNDCX(std::rand() % 800, 800, 800.0f / 600.0f);
-		float y = Utils::ConvertPixelToNDCY(std::rand() % 600, 600);
-		verts[i].position = DirectX::XMFLOAT3(x, y, 0.0f);
-		verts[i + 1].color = DirectX::XMFLOAT4(Utils::RandomFloat(-1.0f, 1.0f), Utils::RandomFloat(-1.0f, 1.0f), Utils::RandomFloat(-1.0f, 1.0f), 1);
-	}
-	*/
 
 	// memory layout
 	LOG_DEBUG("Preparing buffer memory layout");

@@ -46,7 +46,6 @@ public:
 private:
 	int id{-1};
 	static int instanceCounter;
-	constexpr static int DRAWLIB_COUNT{ 100000 };
 	bool isDirectXInitialized{ false };
 
 	ComPtr<ID3D11Device> pD3DDevice{ nullptr };
