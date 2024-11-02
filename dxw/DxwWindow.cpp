@@ -45,22 +45,85 @@ void DxwWindow::DX_Present(int vsync = 1)
 
 void DxwWindow::RunThreadedTest()
 {
-	Vertex vertices[] =
-	{
-		{ DirectX::XMFLOAT3(0.0f,  0.5f, 0.0f), DirectX::XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f) }, // Top vertex, red
-		{ DirectX::XMFLOAT3(0.5f, -0.5f, 0.0f), DirectX::XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f) }, // Bottom-right vertex, green
-		{ DirectX::XMFLOAT3(-0.5f, -0.5f, 0.0f), DirectX::XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f) }  // Bottom-left vertex, blue
-	};
-
 	std::thread([&]()
 		{
 			bool flag = false;
 			float colorRed[4] = { 0.7, 0.14, 0.12, 1.0f };
 			float colorGreen[4] = { 0.14, 0.7, 0.12, 1.0f };
+			float fi = 0;
+
+			UINT stride = sizeof(Vertex);
+			UINT offset = 0;
+			pD3DDeviceContext->IASetInputLayout(pInputLayout.Get());
+			pD3DDeviceContext->IASetVertexBuffers(0, 1, pVertexBuffer.GetAddressOf(), &stride, &offset);
+			pD3DDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+			pD3DDeviceContext->VSSetShader(pVertexShader.Get(), nullptr, 0);
+			pD3DDeviceContext->PSSetShader(pPixelShader.Get(), nullptr, 0);
+
+			DirectX::XMMATRIX scaleMatrix = DirectX::XMMatrixScaling(1, 1, 1);
+			DirectX::XMMATRIX rotationMatrix = DirectX::XMMatrixRotationZ(DirectX::XMConvertToRadians(fi));
+			DirectX::XMMATRIX translationMatrix = DirectX::XMMatrixTranslation(0, 0, 0);
+			DirectX::XMMATRIX transformMatrix = XMMatrixMultiply(scaleMatrix, rotationMatrix);
+			transformMatrix = DirectX::XMMatrixMultiply(transformMatrix, translationMatrix);
+
+			float fieldOfView = DirectX::XM_PIDIV4; // 45 degrees
+			float aspectRatio = static_cast<float>(800) / static_cast<float>(600);
+			float nearPlane = 0.01f;   // Set the near clipping plane
+			float farPlane = 100.0f;  // Set the far clipping plane
+
+			DirectX::XMMATRIX projectionMatrix = DirectX::XMMatrixPerspectiveFovLH(
+				fieldOfView,    // Field of view
+				aspectRatio,    // Aspect ratio
+				nearPlane,      // Near clipping plane
+				farPlane        // Far clipping plane
+			);
+
+			ComPtr<ID3D11Buffer> transformBuffer = nullptr;
+			D3D11_BUFFER_DESC bufferDesc;
+			ZeroMemory(&bufferDesc, sizeof(D3D11_BUFFER_DESC));
+			bufferDesc.Usage = D3D11_USAGE_DEFAULT;
+			bufferDesc.ByteWidth = sizeof(TransformBuffer);
+			bufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+			bufferDesc.CPUAccessFlags = 0;
+
+			pD3DDevice->CreateBuffer(&bufferDesc, nullptr, transformBuffer.GetAddressOf());
+			pD3DDeviceContext->VSSetConstantBuffers(0, 1, transformBuffer.GetAddressOf());
+
+			TransformBuffer transformBufferData;
+			transformBufferData.transform = DirectX::XMMatrixTranspose(transformMatrix); // transpose needed for HLSL
+			transformBufferData.projection = DirectX::XMMatrixTranspose(projectionMatrix);
+
+			pD3DDeviceContext->UpdateSubresource(transformBuffer.Get(), 0, nullptr, &transformBufferData, 0, 0);
+
+			// To disable back-face culling
+			D3D11_RASTERIZER_DESC rasterDesc = {};
+			rasterDesc.FillMode = D3D11_FILL_SOLID;
+			rasterDesc.CullMode = D3D11_CULL_NONE; // Disable culling
+
+			ID3D11RasterizerState* rasterState;
+			pD3DDevice->CreateRasterizerState(&rasterDesc, &rasterState);
+			pD3DDeviceContext->RSSetState(rasterState);
 
 			while (true)
 			{
+				fi += 0.5f;
 				D3D_Clear();
+
+				// Clear the back buffer and depth buffer
+				pD3DDeviceContext->ClearDepthStencilView(pDepthStencilView.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
+
+
+				DirectX::XMMATRIX scaleMatrix = DirectX::XMMatrixScaling(1, 1, 1);
+				DirectX::XMMATRIX rotationMatrix = DirectX::XMMatrixRotationRollPitchYaw(DirectX::XMConvertToRadians(fi), DirectX::XMConvertToRadians(fi + fi/2), DirectX::XMConvertToRadians(0));
+				DirectX::XMMATRIX translationMatrix = DirectX::XMMatrixTranslation(0, 0, 1);
+				DirectX::XMMATRIX transformMatrix = XMMatrixMultiply(scaleMatrix, rotationMatrix);
+				transformMatrix = DirectX::XMMatrixMultiply(transformMatrix, translationMatrix);
+				transformBufferData.transform = DirectX::XMMatrixTranspose(transformMatrix); // transpose needed for HLSL
+				transformBufferData.projection = DirectX::XMMatrixTranspose(projectionMatrix);
+				pD3DDeviceContext->UpdateSubresource(transformBuffer.Get(), 0, nullptr, &transformBufferData, 0, 0);
+
+				pD3DDeviceContext->Draw(12, 0);
 				DX_Present(1);
 			}
 		}).detach();
@@ -138,8 +201,39 @@ void DxwWindow::InitDirect3D(HWND hWnd)
 	pD3DDeviceContext->RSSetViewports(1, &viewport);
 
 
+	// Create the depth buffer description
+	D3D11_TEXTURE2D_DESC depthStencilDesc = {};
+	depthStencilDesc.Width = width; // Set to your window width
+	depthStencilDesc.Height = height; // Set to your window height
+	depthStencilDesc.MipLevels = 1;
+	depthStencilDesc.ArraySize = 1;
+	depthStencilDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT; // Common depth format
+	depthStencilDesc.SampleDesc.Count = 1; // No multi-sampling
+	depthStencilDesc.Usage = D3D11_USAGE_DEFAULT;
+	depthStencilDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+
+	// Create the depth buffer
+	hr = pD3DDevice->CreateTexture2D(&depthStencilDesc, nullptr, pDepthStencilBuffer.GetAddressOf());
+	if (FAILED(hr))
+	{
+		LOG_ERROR("Could not create texture 2D for depth buffer!");
+		return;
+	}
+
+	// Create the depth stencil view
+	pD3DDevice->CreateDepthStencilView(pDepthStencilBuffer.Get(), nullptr, pDepthStencilView.GetAddressOf());
+	if (FAILED(hr))
+	{
+		LOG_ERROR("Could not create the depth stencil view!");
+		return;
+	}
+
+	// Bind the depth stencil view to the output merger stage
+	pD3DDeviceContext->OMSetRenderTargets(1, pRenderTargetView.GetAddressOf(), pDepthStencilView.Get());
+
+
 	LOG_DEBUG("Preparing vertex data");
-	// buffer of vertex data
+	/* buffer of vertex data
 	std::vector<Vertex> verts{};
 	verts.resize(DRAWLIB_COUNT);
 	for (size_t i = 0; i < DRAWLIB_COUNT; ++i)
@@ -157,10 +251,44 @@ void DxwWindow::InitDirect3D(HWND hWnd)
 		verts[i].position = DirectX::XMFLOAT3(x, y, 0.0f);
 		verts[i + 1].color = DirectX::XMFLOAT4(Utils::RandomFloat(-1.0f, 1.0f), Utils::RandomFloat(-1.0f, 1.0f), Utils::RandomFloat(-1.0f, 1.0f), 1);
 	}
+	*/
+
+	const float factor = 0.15f;
+	std::vector<Vertex> vertices =
+	{
+		{ DirectX::XMFLOAT3(0.0f * factor,  1.0f * factor,  0.0f * factor), DirectX::XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f) }, // A (Top)
+		{ DirectX::XMFLOAT3(1.0f * factor, -1.0f * factor, -1.0f * factor), DirectX::XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f) }, // B (Bottom-Right)
+		{ DirectX::XMFLOAT3(-1.0f * factor, -1.0f * factor, -1.0f * factor), DirectX::XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f) }, // C (Bottom-Left)
+		{ DirectX::XMFLOAT3(0.0f * factor, -1.0f * factor,  1.0f * factor), DirectX::XMFLOAT4(1.0f, 1.0f, 0.0f, 1.0f) }  // D (Back)
+	};
+
+	std::vector<Vertex> verts;
+	verts.reserve(12);
+
+	// Face ABC
+	verts.push_back(vertices[0]); // A
+	verts.push_back(vertices[1]); // B
+	verts.push_back(vertices[2]); // C
+
+	// Face ABD
+	verts.push_back(vertices[0]); // A
+	verts.push_back(vertices[1]); // B
+	verts.push_back(vertices[3]); // D
+
+	// Face ACD
+	verts.push_back(vertices[0]); // A
+	verts.push_back(vertices[2]); // C
+	verts.push_back(vertices[3]); // D
+
+	// Face BCD
+	verts.push_back(vertices[1]); // B
+	verts.push_back(vertices[2]); // C
+	verts.push_back(vertices[3]); // D
+
 
 	D3D11_BUFFER_DESC bufferDesc = {};
 	bufferDesc.Usage = D3D11_USAGE_DEFAULT;
-	bufferDesc.ByteWidth = DRAWLIB_COUNT;
+	bufferDesc.ByteWidth = sizeof(Vertex) * static_cast<UINT>(verts.size());
 	bufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 	bufferDesc.CPUAccessFlags = 0;
 
@@ -175,8 +303,8 @@ void DxwWindow::InitDirect3D(HWND hWnd)
 		return;
 	}
 
-	LOG_DEBUG("Preparing buffer memory layout");
 	// memory layout
+	LOG_DEBUG("Preparing buffer memory layout");
 	D3D11_INPUT_ELEMENT_DESC layout[] =
 	{
 		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
@@ -184,8 +312,8 @@ void DxwWindow::InitDirect3D(HWND hWnd)
 	};
 	UINT numElements = ARRAYSIZE(layout);
 
-	LOG_DEBUG("Compiling shaders");
 	// shaders
+	LOG_DEBUG("Compiling shaders");
 	ComPtr<ID3DBlob> pVSBlob{ nullptr };
 	ComPtr<ID3DBlob> pPSBlob{ nullptr };
 

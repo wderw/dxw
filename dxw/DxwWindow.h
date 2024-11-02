@@ -64,6 +64,8 @@ private:
 	ComPtr<ID3D11InputLayout> pInputLayout{ nullptr };
 	ComPtr<ID3D11VertexShader> pVertexShader{ nullptr };
 	ComPtr<ID3D11PixelShader> pPixelShader{ nullptr };
+	ComPtr<ID3D11Texture2D> pDepthStencilBuffer{ nullptr };
+	ComPtr<ID3D11DepthStencilView> pDepthStencilView{ nullptr };
 };
 
 }
