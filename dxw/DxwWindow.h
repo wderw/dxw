@@ -56,6 +56,10 @@ private:
 	int id{-1};
 	static int instanceCounter;
 	bool isDirectXInitialized{ false };
+	int windowWidth{ 0 };
+	int windowHeight{ 0 };
+
+	void SetWindowSize(int, int);
 
 	DirectX::XMMATRIX scalingMatrix{ DirectX::XMMatrixIdentity() };
 	DirectX::XMMATRIX rotationMatrix{ DirectX::XMMatrixIdentity() };

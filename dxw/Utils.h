@@ -53,7 +53,7 @@ public:
 		return tetrahedron;
 	}
 
-	static inline std::vector<Vertex> GenerateLines()
+	static inline std::vector<Vertex> GenerateLines(int width, int height)
 	{
 		// lines
 		constexpr static int DRAWLIB_COUNT{ 100000 };
@@ -61,16 +61,16 @@ public:
 		lineVerts.resize(DRAWLIB_COUNT);
 		for (size_t i = 0; i < DRAWLIB_COUNT; ++i)
 		{
-			float x = Utils::ConvertPixelToNDCX(0, 800, 800.0f / 600.0f);
-			float y = Utils::ConvertPixelToNDCY(0, 600);
+			float x = Utils::ConvertPixelToNDCX(0, width, width / height);
+			float y = Utils::ConvertPixelToNDCY(0, height);
 			lineVerts[i].position = DirectX::XMFLOAT3(x, y, 0.0f);
 			lineVerts[i].color = DirectX::XMFLOAT4(1, 0, 0, 1);
 		}
 
 		for (size_t i = 0; i < DRAWLIB_COUNT; i += 2)
 		{
-			float x = Utils::ConvertPixelToNDCX(std::rand() % 800, 800, 800.0f / 600.0f);
-			float y = Utils::ConvertPixelToNDCY(std::rand() % 600, 600);
+			float x = Utils::ConvertPixelToNDCX(std::rand() % width, width, width / height);
+			float y = Utils::ConvertPixelToNDCY(std::rand() % height, height);
 			lineVerts[i].position = DirectX::XMFLOAT3(x, y, 0.0f);
 			lineVerts[i + 1].color = DirectX::XMFLOAT4(Utils::RandomFloat(-1.0f, 1.0f), Utils::RandomFloat(-1.0f, 1.0f), Utils::RandomFloat(-1.0f, 1.0f), 1);
 		}

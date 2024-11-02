@@ -92,13 +92,19 @@ DirectX::XMMATRIX DxwWindow::RecalculateTransformMatrix()
     return DirectX::XMMatrixMultiply(matrix, translationMatrix);
 }
 
+void DxwWindow::SetWindowSize(int w, int h)
+{
+	windowWidth = w;
+	windowHeight = h;
+}
+
 void DxwWindow::RunThreadedTest()
 {
 	std::thread([&]()
 		{
 			float fi = 0;
 
-			std::vector<Vertex> lineVerts = Utils::GenerateLines();
+			std::vector<Vertex> lineVerts = Utils::GenerateLines(windowWidth, windowHeight);
 			std::vector<Vertex> tetrahedronVerts = Utils::GenerateTetrahedron();
 
 			D3D11_BUFFER_DESC bufferDesc = {};
@@ -129,7 +135,7 @@ void DxwWindow::RunThreadedTest()
 
 			D3D_SetTranslation(0, 0, 1);
 			D3D_RecalculateTransformMatrix();
-			D3D_SetPerspectiveProjectionMatrix(DirectX::XM_PIDIV4, static_cast<float>(800) / static_cast<float>(600), 0.01f, 100.0f);
+			D3D_SetPerspectiveProjectionMatrix(DirectX::XM_PIDIV4, static_cast<float>(windowWidth) / static_cast<float>(windowHeight), 0.01f, 100.0f);
 
 			ComPtr<ID3D11Buffer> transformBuffer = nullptr;
 
@@ -217,14 +223,13 @@ void DxwWindow::InitDirect3D(HWND hWnd)
 	RECT clientRect;
 	GetClientRect(hWnd, &clientRect);
 
-	UINT width = clientRect.right - clientRect.left;
-	UINT height = clientRect.bottom - clientRect.top;
+	SetWindowSize(clientRect.right - clientRect.left, clientRect.bottom - clientRect.top);
 
 	LOG_DEBUG("Initializing Swap Chain and D3D11 Device Context");
 	DXGI_SWAP_CHAIN_DESC swapChainDesc = {};
 	swapChainDesc.BufferCount = 1;
-	swapChainDesc.BufferDesc.Width = width;
-	swapChainDesc.BufferDesc.Height = height;
+	swapChainDesc.BufferDesc.Width = windowWidth;
+	swapChainDesc.BufferDesc.Height = windowHeight;
 	swapChainDesc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM; // format for Direct2D
 	swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
 	swapChainDesc.OutputWindow = hWnd;
@@ -273,8 +278,8 @@ void DxwWindow::InitDirect3D(HWND hWnd)
 
 	LOG_DEBUG("Creating D3D11 Viewport");
 	D3D11_VIEWPORT viewport;
-	viewport.Width = 800.0f;
-	viewport.Height = 600.0f;
+	viewport.Width = windowWidth;
+	viewport.Height = windowHeight;
 	viewport.MinDepth = 0.0f;
 	viewport.MaxDepth = 1.0f;
 	viewport.TopLeftX = 0.0f;
@@ -283,8 +288,8 @@ void DxwWindow::InitDirect3D(HWND hWnd)
 
 	// Create the depth buffer description
 	D3D11_TEXTURE2D_DESC depthStencilDesc = {};
-	depthStencilDesc.Width = width; // Set to your window width
-	depthStencilDesc.Height = height; // Set to your window height
+	depthStencilDesc.Width = windowWidth; // Set to your window width
+	depthStencilDesc.Height = windowHeight; // Set to your window height
 	depthStencilDesc.MipLevels = 1;
 	depthStencilDesc.ArraySize = 1;
 	depthStencilDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT; // Common depth format
