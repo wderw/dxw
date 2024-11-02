@@ -67,16 +67,16 @@ void DxwWindow::RunThreadedTest()
 			DirectX::XMMATRIX transformMatrix = XMMatrixMultiply(scaleMatrix, rotationMatrix);
 			transformMatrix = DirectX::XMMatrixMultiply(transformMatrix, translationMatrix);
 
-			float fieldOfView = DirectX::XM_PIDIV4; // 45 degrees
+			float fieldOfView = DirectX::XM_PIDIV4;
 			float aspectRatio = static_cast<float>(800) / static_cast<float>(600);
-			float nearPlane = 0.01f;   // Set the near clipping plane
-			float farPlane = 100.0f;  // Set the far clipping plane
+			float nearPlane = 0.01f;
+			float farPlane = 100.0f;
 
 			DirectX::XMMATRIX projectionMatrix = DirectX::XMMatrixPerspectiveFovLH(
-				fieldOfView,    // Field of view
-				aspectRatio,    // Aspect ratio
-				nearPlane,      // Near clipping plane
-				farPlane        // Far clipping plane
+				fieldOfView,
+				aspectRatio,
+				nearPlane,
+				farPlane
 			);
 
 			ComPtr<ID3D11Buffer> transformBuffer = nullptr;
@@ -253,7 +253,7 @@ void DxwWindow::InitDirect3D(HWND hWnd)
 	}
 	*/
 
-	const float factor = 0.15f;
+	const float factor = 0.1f;
 	std::vector<Vertex> vertices =
 	{
 		{ DirectX::XMFLOAT3(0.0f * factor,  1.0f * factor,  0.0f * factor), DirectX::XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f) }, // A (Top)
