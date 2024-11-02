@@ -153,15 +153,24 @@ void DxwWindow::RunThreadedTest()
 				pDefaultBrush.GetAddressOf()
 			);
 
+			pD2DDeviceContext->CreateSolidColorBrush(
+				D2D1::ColorF(D2D1::ColorF(1, 1, 1, 0.3f)),
+				pDefaultBrush2.GetAddressOf()
+			);
+
 			while (true)
 			{
 				fi += 0.5f;
 				D3D_Clear();
 
+				D2D_BeginDraw();
+				pD2DDeviceContext->FillRoundedRectangle(D2D1::RoundedRect(D2D1::RectF(250, 250, 600, 400), 15.0f, 15.0f), pDefaultBrush2.Get());
+				D2D_EndDraw();
+
 				// Clear the back buffer and depth buffer
 				pD3DDeviceContext->ClearDepthStencilView(pDepthStencilView.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
 
-				DirectX::XMMATRIX scaleMatrix = DirectX::XMMatrixScaling(1.2f, 1.2f, 1.2f);
+				DirectX::XMMATRIX scaleMatrix = DirectX::XMMatrixScaling(1.5f, 1.5f, 1.5f);
 				DirectX::XMMATRIX rotationMatrix = DirectX::XMMatrixRotationRollPitchYaw(DirectX::XMConvertToRadians(fi), DirectX::XMConvertToRadians(fi + fi/2), DirectX::XMConvertToRadians(0));
 				DirectX::XMMATRIX translationMatrix = DirectX::XMMatrixTranslation(0, 0, 1);
 				DirectX::XMMATRIX transformMatrix = XMMatrixMultiply(scaleMatrix, rotationMatrix);
@@ -173,7 +182,7 @@ void DxwWindow::RunThreadedTest()
 				pD3DDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINESTRIP);
 				pD3DDeviceContext->Draw(12, 0);
 
-				scaleMatrix = DirectX::XMMatrixScaling(1, 1, 1);
+				scaleMatrix = DirectX::XMMatrixScaling(1.2f, 1.2f, 1.2f);
 				rotationMatrix = DirectX::XMMatrixRotationRollPitchYaw(DirectX::XMConvertToRadians(-fi - fi/2), DirectX::XMConvertToRadians(-fi), DirectX::XMConvertToRadians(0));
 				translationMatrix = DirectX::XMMatrixTranslation(0, 0, 1);
 				transformMatrix = XMMatrixMultiply(scaleMatrix, rotationMatrix);
@@ -196,6 +205,8 @@ void DxwWindow::RunThreadedTest()
 					textRect,
 					pDefaultBrush.Get()
 				);
+
+				pD2DDeviceContext->FillRoundedRectangle(D2D1::RoundedRect(D2D1::RectF(80, 80, 400, 500), 15.0f, 15.0f), pDefaultBrush2.Get());
 
 				D2D_EndDraw();
 

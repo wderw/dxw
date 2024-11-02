@@ -60,6 +60,7 @@ private:
 	ComPtr<IDWriteFactory> pDWriteFactory{ nullptr };
 	ComPtr<IDWriteTextFormat> pDefaultTextFormat{ nullptr };
 	ComPtr<ID2D1SolidColorBrush> pDefaultBrush{ nullptr };
+	ComPtr<ID2D1SolidColorBrush> pDefaultBrush2{ nullptr };
 	ComPtr<ID3D11Buffer> pVertexBuffer{ nullptr };
 	ComPtr<ID3D11InputLayout> pInputLayout{ nullptr };
 	ComPtr<ID3D11VertexShader> pVertexShader{ nullptr };
