@@ -30,8 +30,14 @@ public:
 	bool IsInitialized();
 
 	int GetId() { return id; }
+	DirectX::XMMATRIX RecalculateTransformMatrix();
 
 	void D3D_Clear();
+	void D3D_SetScale(float, float, float);
+	void D3D_SetRotation(float, float, float);
+	void D3D_SetTranslation(float, float, float);
+	void D3D_RecalculateTransformMatrix();
+
 	void D2D_Clear();
 	void D2D_BeginDraw();
 	void D2D_EndDraw();
@@ -47,6 +53,11 @@ private:
 	int id{-1};
 	static int instanceCounter;
 	bool isDirectXInitialized{ false };
+
+	DirectX::XMMATRIX scalingMatrix{ DirectX::XMMatrixIdentity() };
+	DirectX::XMMATRIX rotationMatrix{ DirectX::XMMatrixIdentity() };
+	DirectX::XMMATRIX translationMatrix{ DirectX::XMMatrixIdentity() };
+	DirectX::XMMATRIX transformMatrix{ DirectX::XMMatrixIdentity() };
 
 	ComPtr<ID3D11Device> pD3DDevice{ nullptr };
 	ComPtr<ID3D11DeviceContext> pD3DDeviceContext{ nullptr };

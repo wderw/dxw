@@ -6,6 +6,7 @@
 #include "DxwSharedContext.h"
 #include "Vertex.h"
 #include "TransformBuffer.h"
+#include "Utils.h"
 
 namespace dxw
 {
@@ -21,6 +22,27 @@ void DxwWindow::D3D_Clear()
 {
 	float colorDarkGray[4] = { 0.15, 0.15, 0.15, 1.0f };
 	pD3DDeviceContext->ClearRenderTargetView(pRenderTargetView.Get(), colorDarkGray);
+}
+
+void DxwWindow::D3D_SetScale(float x, float y, float z)
+{
+	scalingMatrix = DirectX::XMMatrixScaling(x, y, z);
+}
+
+void DxwWindow::D3D_SetRotation(float degreesX, float degreesY, float degreesZ)
+{
+	rotationMatrix = DirectX::XMMatrixRotationRollPitchYaw(DirectX::XMConvertToRadians(degreesX), DirectX::XMConvertToRadians(degreesY), DirectX::XMConvertToRadians(degreesZ));
+}
+
+void DxwWindow::D3D_SetTranslation(float x, float y, float z)
+{
+	translationMatrix = DirectX::XMMatrixTranslation(x, y, z);
+}
+
+void DxwWindow::D3D_RecalculateTransformMatrix()
+{
+	transformMatrix = XMMatrixMultiply(scalingMatrix, rotationMatrix);
+	transformMatrix = DirectX::XMMatrixMultiply(transformMatrix, translationMatrix);
 }
 
 void DxwWindow::D2D_Clear()
@@ -44,58 +66,29 @@ void DxwWindow::DX_Present(int vsync = 1)
 	pSwapChain->Present(vsync, 0);
 }
 
+DirectX::XMMATRIX DxwWindow::RecalculateTransformMatrix()
+{
+	DirectX::XMMATRIX matrix = DirectX::XMMatrixMultiply(scalingMatrix, rotationMatrix);
+    return DirectX::XMMatrixMultiply(matrix, translationMatrix);
+}
+
 void DxwWindow::RunThreadedTest()
 {
 	std::thread([&]()
 		{
 			float fi = 0;
 
-			// lines
-			constexpr static int DRAWLIB_COUNT{ 100000 };
-			std::vector<Vertex> lineVerts{};
-			lineVerts.resize(DRAWLIB_COUNT);
-			for (size_t i = 0; i < DRAWLIB_COUNT; ++i)
-			{
-				float x = Utils::ConvertPixelToNDCX(0, 800, 800.0f / 600.0f);
-				float y = Utils::ConvertPixelToNDCY(0, 600);
-				lineVerts[i].position = DirectX::XMFLOAT3(x, y, 0.0f);
-				lineVerts[i].color = DirectX::XMFLOAT4(1, 0, 0, 1);
-			}
-
-			for (size_t i = 0; i < DRAWLIB_COUNT; i += 2)
-			{
-				float x = Utils::ConvertPixelToNDCX(std::rand() % 800, 800, 800.0f / 600.0f);
-				float y = Utils::ConvertPixelToNDCY(std::rand() % 600, 600);
-				lineVerts[i].position = DirectX::XMFLOAT3(x, y, 0.0f);
-				lineVerts[i + 1].color = DirectX::XMFLOAT4(Utils::RandomFloat(-1.0f, 1.0f), Utils::RandomFloat(-1.0f, 1.0f), Utils::RandomFloat(-1.0f, 1.0f), 1);
-			}
-
-			// tetrahedrons
-			const float factor = 0.1f;
-			std::vector<Vertex> vertices =
-			{
-				{ DirectX::XMFLOAT3(1 * factor,  1 * factor,  1 * factor), DirectX::XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f) }, // A (Top)
-				{ DirectX::XMFLOAT3(1 * factor, -1 * factor, -1 * factor), DirectX::XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f) }, // B (Bottom-Right)
-				{ DirectX::XMFLOAT3(-1 * factor, 1 * factor, -1 * factor), DirectX::XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f) }, // C (Bottom-Left)
-				{ DirectX::XMFLOAT3(-1 * factor, -1 * factor,  1 * factor), DirectX::XMFLOAT4(1.0f, 1.0f, 0.0f, 1.0f) }  // D (Back)
-			};
-
-			std::vector<Vertex> verts;
-			verts.reserve(12);
-			std::array<int, 12> order = {0,1,2,0,1,3,0,2,3,1,2,3};
-			for (int i : order)
-			{
-				verts.push_back(vertices[i]);
-			}
+			std::vector<Vertex> lineVerts = Utils::GenerateLines();
+			std::vector<Vertex> tetrahedronVerts = Utils::GenerateTetrahedron();
 
 			D3D11_BUFFER_DESC bufferDesc = {};
 			bufferDesc.Usage = D3D11_USAGE_DEFAULT;
-			bufferDesc.ByteWidth = sizeof(Vertex) * static_cast<UINT>(verts.size());
+			bufferDesc.ByteWidth = sizeof(Vertex) * static_cast<UINT>(tetrahedronVerts.size());
 			bufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 			bufferDesc.CPUAccessFlags = 0;
 
 			D3D11_SUBRESOURCE_DATA initData = {};
-			initData.pSysMem = verts.data();
+			initData.pSysMem = tetrahedronVerts.data();
 
 			LOG_DEBUG("Creating vertex buffer");
 			HRESULT hr = pD3DDevice->CreateBuffer(&bufferDesc, &initData, pVertexBuffer.GetAddressOf());
@@ -104,7 +97,6 @@ void DxwWindow::RunThreadedTest()
 				LOG_ERROR("Failed to create vertex buffer!");
 				return;
 			}
-
 
 			UINT stride = sizeof(Vertex);
 			UINT offset = 0;
@@ -115,11 +107,8 @@ void DxwWindow::RunThreadedTest()
 			pD3DDeviceContext->VSSetShader(pVertexShader.Get(), nullptr, 0);
 			pD3DDeviceContext->PSSetShader(pPixelShader.Get(), nullptr, 0);
 
-			DirectX::XMMATRIX scaleMatrix = DirectX::XMMatrixScaling(1, 1, 1);
-			DirectX::XMMATRIX rotationMatrix = DirectX::XMMatrixRotationZ(DirectX::XMConvertToRadians(fi));
-			DirectX::XMMATRIX translationMatrix = DirectX::XMMatrixTranslation(0, 0, 0);
-			DirectX::XMMATRIX transformMatrix = XMMatrixMultiply(scaleMatrix, rotationMatrix);
-			transformMatrix = DirectX::XMMatrixMultiply(transformMatrix, translationMatrix);
+			D3D_SetTranslation(0, 0, 1);
+			D3D_RecalculateTransformMatrix();
 
 			float fieldOfView = DirectX::XM_PIDIV4;
 			float aspectRatio = static_cast<float>(800) / static_cast<float>(600);
@@ -171,11 +160,10 @@ void DxwWindow::RunThreadedTest()
 
 				pD3DDeviceContext->ClearDepthStencilView(pDepthStencilView.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
 
-				DirectX::XMMATRIX scaleMatrix = DirectX::XMMatrixScaling(1.5f, 1.5f, 1.5f);
-				DirectX::XMMATRIX rotationMatrix = DirectX::XMMatrixRotationRollPitchYaw(DirectX::XMConvertToRadians(fi), DirectX::XMConvertToRadians(fi + fi/2), DirectX::XMConvertToRadians(0));
-				DirectX::XMMATRIX translationMatrix = DirectX::XMMatrixTranslation(0, 0, 1);
-				DirectX::XMMATRIX transformMatrix = XMMatrixMultiply(scaleMatrix, rotationMatrix);
-				transformMatrix = DirectX::XMMatrixMultiply(transformMatrix, translationMatrix);
+				D3D_SetScale(1.5f, 1.5f, 1.5f);
+				D3D_SetRotation(fi, fi + fi / 2, 0);
+				D3D_RecalculateTransformMatrix();
+
 				transformBufferData.transform = DirectX::XMMatrixTranspose(transformMatrix); // transpose needed for HLSL
 				transformBufferData.projection = DirectX::XMMatrixTranspose(projectionMatrix);
 				pD3DDeviceContext->UpdateSubresource(transformBuffer.Get(), 0, nullptr, &transformBufferData, 0, 0);
@@ -183,11 +171,9 @@ void DxwWindow::RunThreadedTest()
 				pD3DDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINESTRIP);
 				pD3DDeviceContext->Draw(12, 0);
 
-				scaleMatrix = DirectX::XMMatrixScaling(1.2f, 1.2f, 1.2f);
-				rotationMatrix = DirectX::XMMatrixRotationRollPitchYaw(DirectX::XMConvertToRadians(fi/3), DirectX::XMConvertToRadians(fi*1.2f), DirectX::XMConvertToRadians(fi/2));
-				translationMatrix = DirectX::XMMatrixTranslation(0, 0, 1);
-				transformMatrix = XMMatrixMultiply(scaleMatrix, rotationMatrix);
-				transformMatrix = DirectX::XMMatrixMultiply(transformMatrix, translationMatrix);
+				D3D_SetScale(1.2f, 1.2f, 1.2f);
+				D3D_SetRotation(fi / 3, fi * 1.2f, fi / 2);
+				D3D_RecalculateTransformMatrix();
 				transformBufferData.transform = DirectX::XMMatrixTranspose(transformMatrix); // transpose needed for HLSL
 				transformBufferData.projection = DirectX::XMMatrixTranspose(projectionMatrix);
 				pD3DDeviceContext->UpdateSubresource(transformBuffer.Get(), 0, nullptr, &transformBufferData, 0, 0);
@@ -199,6 +185,7 @@ void DxwWindow::RunThreadedTest()
 
 				wchar_t fpsText[80] = L"TEST test za¿ó³æ gêœl¹ jaŸñ The quick brown fox jumps over the lazy dog";
 				D2D1_RECT_F textRect = D2D1::RectF(0, 0, 250, 50);
+
 				pD2DDeviceContext->DrawTextW(
 					fpsText,
 					wcslen(fpsText),
@@ -206,7 +193,6 @@ void DxwWindow::RunThreadedTest()
 					textRect,
 					pDefaultBrush.Get()
 				);
-
 				pD2DDeviceContext->FillRoundedRectangle(D2D1::RoundedRect(D2D1::RectF(80, 80, 400, 500), 15.0f, 15.0f), pDefaultBrush2.Get());
 
 				D2D_EndDraw();
