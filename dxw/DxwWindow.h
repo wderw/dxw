@@ -13,6 +13,8 @@
 #include <memory>
 #include <functional>
 
+#include "TransformBuffer.h"
+
 using Microsoft::WRL::ComPtr;
 
 namespace dxw
@@ -40,6 +42,7 @@ public:
 	void D3D_SetPerspectiveProjectionMatrix(float, float, float, float);
 	void D3D_ResetProjectionMatrix();
 	void D3D_ResetTransformMatrix();
+	void D3D_UpdateMatrixSubresources();
 
 	void D2D_Clear();
 	void D2D_BeginDraw();
@@ -85,6 +88,8 @@ private:
 	ComPtr<ID3D11PixelShader> pPixelShader{ nullptr };
 	ComPtr<ID3D11Texture2D> pDepthStencilBuffer{ nullptr };
 	ComPtr<ID3D11DepthStencilView> pDepthStencilView{ nullptr };
+	ComPtr<ID3D11Buffer> transformBuffer{ nullptr };
+	TransformBuffer transformBufferData;
 };
 
 }

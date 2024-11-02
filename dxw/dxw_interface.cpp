@@ -41,6 +41,7 @@ void DXW_Present(int vsync = 1)
 
 bool DXW_IsInitialized()
 {
+	LOG_TRACE("DXW_IsInitialized called");
 	if (DxwSharedContext::GetInstance().GetCurrentWindow() != nullptr)
 	{
 		return DxwSharedContext::GetInstance().GetCurrentWindow()->IsInitialized();

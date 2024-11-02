@@ -65,6 +65,13 @@ void DxwWindow::D3D_ResetTransformMatrix()
 	transformMatrix = DirectX::XMMatrixIdentity();
 }
 
+void DxwWindow::D3D_UpdateMatrixSubresources()
+{
+	transformBufferData.transform = DirectX::XMMatrixTranspose(transformMatrix); // transpose needed for HLSL
+	transformBufferData.projection = DirectX::XMMatrixTranspose(projectionMatrix);
+	pD3DDeviceContext->UpdateSubresource(transformBuffer.Get(), 0, nullptr, &transformBufferData, 0, 0);
+}
+
 void DxwWindow::D2D_Clear()
 {
 	pD2DDeviceContext->Clear(D2D1::ColorF(0, 1, 0, 1));
@@ -137,8 +144,6 @@ void DxwWindow::RunThreadedTest()
 			D3D_RecalculateTransformMatrix();
 			D3D_SetPerspectiveProjectionMatrix(DirectX::XM_PIDIV4, static_cast<float>(windowWidth) / static_cast<float>(windowHeight), 0.01f, 100.0f);
 
-			ComPtr<ID3D11Buffer> transformBuffer = nullptr;
-
 			ZeroMemory(&bufferDesc, sizeof(D3D11_BUFFER_DESC));
 			bufferDesc.Usage = D3D11_USAGE_DEFAULT;
 			bufferDesc.ByteWidth = sizeof(TransformBuffer);
@@ -147,12 +152,7 @@ void DxwWindow::RunThreadedTest()
 
 			pD3DDevice->CreateBuffer(&bufferDesc, nullptr, transformBuffer.GetAddressOf());
 			pD3DDeviceContext->VSSetConstantBuffers(0, 1, transformBuffer.GetAddressOf());
-
-			TransformBuffer transformBufferData;
-			transformBufferData.transform = DirectX::XMMatrixTranspose(transformMatrix); // transpose needed for HLSL
-			transformBufferData.projection = DirectX::XMMatrixTranspose(projectionMatrix);
-
-			pD3DDeviceContext->UpdateSubresource(transformBuffer.Get(), 0, nullptr, &transformBufferData, 0, 0);
+			D3D_UpdateMatrixSubresources();
 
 			pD2DDeviceContext->CreateSolidColorBrush(
 				D2D1::ColorF(D2D1::ColorF(0, 1, 0, 1.0f)),
@@ -178,10 +178,7 @@ void DxwWindow::RunThreadedTest()
 				D3D_SetScale(1.5f, 1.5f, 1.5f);
 				D3D_SetRotation(fi, fi + fi / 2, 0);
 				D3D_RecalculateTransformMatrix();
-
-				transformBufferData.transform = DirectX::XMMatrixTranspose(transformMatrix); // transpose needed for HLSL
-				transformBufferData.projection = DirectX::XMMatrixTranspose(projectionMatrix);
-				pD3DDeviceContext->UpdateSubresource(transformBuffer.Get(), 0, nullptr, &transformBufferData, 0, 0);
+				D3D_UpdateMatrixSubresources();
 
 				pD3DDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINESTRIP);
 				pD3DDeviceContext->Draw(12, 0);
@@ -189,9 +186,7 @@ void DxwWindow::RunThreadedTest()
 				D3D_SetScale(1.2f, 1.2f, 1.2f);
 				D3D_SetRotation(fi / 3, fi * 1.2f, fi / 2);
 				D3D_RecalculateTransformMatrix();
-				transformBufferData.transform = DirectX::XMMatrixTranspose(transformMatrix); // transpose needed for HLSL
-				transformBufferData.projection = DirectX::XMMatrixTranspose(projectionMatrix);
-				pD3DDeviceContext->UpdateSubresource(transformBuffer.Get(), 0, nullptr, &transformBufferData, 0, 0);
+				D3D_UpdateMatrixSubresources();
 
 				pD3DDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
 				pD3DDeviceContext->Draw(12, 0);
