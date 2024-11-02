@@ -37,6 +37,9 @@ public:
 	void D3D_SetRotation(float, float, float);
 	void D3D_SetTranslation(float, float, float);
 	void D3D_RecalculateTransformMatrix();
+	void D3D_SetPerspectiveProjectionMatrix(float, float, float, float);
+	void D3D_ResetProjectionMatrix();
+	void D3D_ResetTransformMatrix();
 
 	void D2D_Clear();
 	void D2D_BeginDraw();
@@ -58,6 +61,7 @@ private:
 	DirectX::XMMATRIX rotationMatrix{ DirectX::XMMatrixIdentity() };
 	DirectX::XMMATRIX translationMatrix{ DirectX::XMMatrixIdentity() };
 	DirectX::XMMATRIX transformMatrix{ DirectX::XMMatrixIdentity() };
+	DirectX::XMMATRIX projectionMatrix{ DirectX::XMMatrixIdentity() };
 
 	ComPtr<ID3D11Device> pD3DDevice{ nullptr };
 	ComPtr<ID3D11DeviceContext> pD3DDeviceContext{ nullptr };

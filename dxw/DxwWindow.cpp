@@ -45,6 +45,26 @@ void DxwWindow::D3D_RecalculateTransformMatrix()
 	transformMatrix = DirectX::XMMatrixMultiply(transformMatrix, translationMatrix);
 }
 
+void DxwWindow::D3D_SetPerspectiveProjectionMatrix(float fieldOfView, float aspectRatio, float nearPlane, float farPlane)
+{
+	projectionMatrix = DirectX::XMMatrixPerspectiveFovLH(
+		fieldOfView,
+		aspectRatio,
+		nearPlane,
+		farPlane
+	);
+}
+
+void DxwWindow::D3D_ResetProjectionMatrix()
+{
+	projectionMatrix = DirectX::XMMatrixIdentity();
+}
+
+void DxwWindow::D3D_ResetTransformMatrix()
+{
+	transformMatrix = DirectX::XMMatrixIdentity();
+}
+
 void DxwWindow::D2D_Clear()
 {
 	pD2DDeviceContext->Clear(D2D1::ColorF(0, 1, 0, 1));
@@ -109,18 +129,7 @@ void DxwWindow::RunThreadedTest()
 
 			D3D_SetTranslation(0, 0, 1);
 			D3D_RecalculateTransformMatrix();
-
-			float fieldOfView = DirectX::XM_PIDIV4;
-			float aspectRatio = static_cast<float>(800) / static_cast<float>(600);
-			float nearPlane = 0.01f;
-			float farPlane = 100.0f;
-
-			DirectX::XMMATRIX projectionMatrix = DirectX::XMMatrixPerspectiveFovLH(
-				fieldOfView,
-				aspectRatio,
-				nearPlane,
-				farPlane
-			);
+			D3D_SetPerspectiveProjectionMatrix(DirectX::XM_PIDIV4, static_cast<float>(800) / static_cast<float>(600), 0.01f, 100.0f);
 
 			ComPtr<ID3D11Buffer> transformBuffer = nullptr;
 
