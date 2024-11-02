@@ -72,6 +72,16 @@ void DxwWindow::D3D_UpdateMatrixSubresources()
 	pD3DDeviceContext->UpdateSubresource(transformBuffer.Get(), 0, nullptr, &transformBufferData, 0, 0);
 }
 
+void DxwWindow::D3D_SetTopology(D3D11_PRIMITIVE_TOPOLOGY primitiveTopology)
+{
+	pD3DDeviceContext->IASetPrimitiveTopology(primitiveTopology);
+}
+
+void DxwWindow::D3D_Draw(int vertexCount, int startVertexLocation)
+{
+	pD3DDeviceContext->Draw(vertexCount, startVertexLocation);
+}
+
 void DxwWindow::D2D_Clear()
 {
 	pD2DDeviceContext->Clear(D2D1::ColorF(0, 1, 0, 1));
@@ -180,16 +190,16 @@ void DxwWindow::RunThreadedTest()
 				D3D_RecalculateTransformMatrix();
 				D3D_UpdateMatrixSubresources();
 
-				pD3DDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINESTRIP);
-				pD3DDeviceContext->Draw(12, 0);
+				D3D_SetTopology(D3D11_PRIMITIVE_TOPOLOGY_LINESTRIP);
+				D3D_Draw(12, 0);
 
 				D3D_SetScale(1.2f, 1.2f, 1.2f);
 				D3D_SetRotation(fi / 3, fi * 1.2f, fi / 2);
 				D3D_RecalculateTransformMatrix();
 				D3D_UpdateMatrixSubresources();
 
-				pD3DDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
-				pD3DDeviceContext->Draw(12, 0);
+				D3D_SetTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+				D3D_Draw(12, 0);
 
 				D2D_BeginDraw();
 

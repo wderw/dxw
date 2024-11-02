@@ -43,6 +43,8 @@ public:
 	void D3D_ResetProjectionMatrix();
 	void D3D_ResetTransformMatrix();
 	void D3D_UpdateMatrixSubresources();
+	void D3D_SetTopology(D3D11_PRIMITIVE_TOPOLOGY);
+	void D3D_Draw(int, int);
 
 	void D2D_Clear();
 	void D2D_BeginDraw();
