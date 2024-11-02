@@ -15,7 +15,8 @@ typedef void(__stdcall* DXW_D2D_BeginDrawFunc)();
 typedef void(__stdcall* DXW_D2D_EndDrawFunc)();
 typedef void(__stdcall* DXW_D2D_ClearFunc)();
 typedef void(__stdcall* DXW_PresentFunc)(int);
-
+typedef bool(__stdcall* DXW_IsInitializedFunc)();
+typedef void(__stdcall* DXW_RunThreadedTestFunc)();
 
 DXW_SetTargetWindowFunc DXW_SetTargetWindow = nullptr;
 DXW_InitWindowFunc      DXW_InitWindow      = nullptr;
@@ -24,6 +25,8 @@ DXW_D2D_BeginDrawFunc   DXW_D2D_BeginDraw   = nullptr;
 DXW_D2D_EndDrawFunc     DXW_D2D_EndDraw     = nullptr;
 DXW_D2D_ClearFunc       DXW_D2D_Clear       = nullptr;
 DXW_PresentFunc         DXW_Present         = nullptr;
+DXW_IsInitializedFunc   DXW_IsInitialized   = nullptr;
+DXW_RunThreadedTestFunc DXW_RunThreadedTest = nullptr;
 
 const std::wstring libraryName = L"dxw.dll";
 void CreateDrawingPanel(HWND parentHwnd);
@@ -119,6 +122,24 @@ bool LoadWrapperDll()
             _stprintf_s(errorMsg, _T("DXW_SetTargetWindow GetProcAddress failed. Error code: %lu"), error);
             MessageBox(nullptr, errorMsg, _T("Error"), MB_OK);
         }
+
+        DXW_IsInitialized = (DXW_IsInitializedFunc)GetProcAddress(hDLL, "DXW_IsInitialized");
+        if (!DXW_IsInitialized)
+        {
+            DWORD error = GetLastError();
+            TCHAR errorMsg[256];
+            _stprintf_s(errorMsg, _T("DXW_IsInitialized GetProcAddress failed. Error code: %lu"), error);
+            MessageBox(nullptr, errorMsg, _T("Error"), MB_OK);
+        }
+
+        DXW_RunThreadedTest = (DXW_RunThreadedTestFunc)GetProcAddress(hDLL, "DXW_RunThreadedTest");
+        if (!DXW_RunThreadedTest)
+        {
+            DWORD error = GetLastError();
+            TCHAR errorMsg[256];
+            _stprintf_s(errorMsg, _T("DXW_RunThreadedTest GetProcAddress failed. Error code: %lu"), error);
+            MessageBox(nullptr, errorMsg, _T("Error"), MB_OK);
+        }
     }
 
     std::cout << "Wrapper loaded successfully!" << std::endl;
@@ -155,11 +176,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             nullptr);
         return 0;
     }
-    case WM_MOVE:
-    case WM_SIZE:
-    case WM_MOUSEMOVE:
-    case WM_SHOWWINDOW:
-        return 0;
     case WM_DESTROY:
         PostQuitMessage(0);
         return 0;
@@ -175,7 +191,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 {
     WNDCLASSEX wcex = {};
     wcex.cbSize = sizeof(WNDCLASSEX);
-    wcex.style = CS_HREDRAW | CS_VREDRAW;
+    //dont redraw contents on resize
+    //wcex.style = CS_HREDRAW | CS_VREDRAW;
     wcex.lpfnWndProc = WndProc;
     wcex.hInstance = hInstance;
     wcex.hCursor = LoadCursor(nullptr, IDC_ARROW);
@@ -183,7 +200,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     wcex.lpszClassName = L"DXWWindowClass";
     RegisterClassEx(&wcex);
 
-    hWndMain = CreateWindow(L"DXWWindowClass", L"DirectX Wrapper test", WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, 1024, 768, nullptr, nullptr, hInstance, nullptr);
+    hWndMain = CreateWindow(L"DXWWindowClass", L"DirectX Wrapper test", WS_OVERLAPPEDWINDOW, 0, 0, 1024, 768, nullptr, nullptr, hInstance, nullptr);
     if (!hWndMain) return -1;
 
     SetupConsole();
@@ -201,17 +218,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     std::cout << "Window allocated id was: " << id << std::endl;
 
     DXW_SetTargetWindow(id); // redundant but fine - target window is always the last added window
-    DXW_D2D_BeginDraw();
-    DXW_D2D_Clear();
-    DXW_D2D_EndDraw();
-
-    DXW_D3D_Clear();
-
-    DXW_D2D_BeginDraw();
-    DXW_D2D_Clear();
-    DXW_D2D_EndDraw();
-
-    DXW_Present(1);
+    //DXW_D3D_Clear();
+    //DXW_Present(1);
+    DXW_RunThreadedTest();
 
     MSG msg = {};
     while (GetMessage(&msg, nullptr, 0, 0))

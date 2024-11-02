@@ -27,6 +27,7 @@ public:
 	void InitDirect3D(HWND);
 	void InitDirect2D();
 	void CreateTextResources();
+	bool IsInitialized();
 
 	int GetId() { return id; }
 
@@ -35,6 +36,7 @@ public:
 	void D2D_BeginDraw();
 	void D2D_EndDraw();
 	void DX_Present(int);
+	void RunThreadedTest();
 
 	bool operator==(const DxwWindow& other) const
 	{
@@ -45,6 +47,7 @@ private:
 	int id{-1};
 	static int instanceCounter;
 	constexpr static int DRAWLIB_COUNT{ 100000 };
+	bool isDirectXInitialized{ false };
 
 	ComPtr<ID3D11Device> pD3DDevice{ nullptr };
 	ComPtr<ID3D11DeviceContext> pD3DDeviceContext{ nullptr };
@@ -61,21 +64,6 @@ private:
 	ComPtr<ID3D11InputLayout> pInputLayout{ nullptr };
 	ComPtr<ID3D11VertexShader> pVertexShader{ nullptr };
 	ComPtr<ID3D11PixelShader> pPixelShader{ nullptr };
-
-	float ConvertPixelToNDCX(int pixelX, int width, float aspectRatio)
-	{
-		return ((2.0f * pixelX) / width - 1.0f) * aspectRatio;
-	}
-
-	float ConvertPixelToNDCY(int pixelY, int height)
-	{
-		return 1.0f - (2.0f * pixelY) / height;
-	}
-
-	float RandomFloat(float min, float max)
-	{
-		return min + static_cast<float>(std::rand()) / (static_cast<float>(RAND_MAX / (max - min)));
-	}
 };
 
 }

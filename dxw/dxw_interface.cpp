@@ -27,10 +27,28 @@ void DXW_SetTargetWindow(int newId)
 	DxwSharedContext::GetInstance().SetTargetId(newId);
 }
 
+void DXW_RunThreadedTest()
+{
+	LOG_TRACE("DXW_RunThreadedTest called");
+	DxwSharedContext::GetInstance().GetCurrentWindow()->RunThreadedTest();
+}
+
 void DXW_Present(int vsync = 1)
 {
 	LOG_TRACE("DXW_Present called");
 	DxwSharedContext::GetInstance().GetCurrentWindow()->DX_Present(vsync);
+}
+
+bool DXW_IsInitialized()
+{
+	if (DxwSharedContext::GetInstance().GetCurrentWindow() != nullptr)
+	{
+		return DxwSharedContext::GetInstance().GetCurrentWindow()->IsInitialized();
+	}
+	else
+	{
+		LOG_WARN("No windows available in SharedContext!");
+	}
 }
 
 void DXW_D3D_Clear()

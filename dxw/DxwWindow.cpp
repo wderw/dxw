@@ -1,3 +1,5 @@
+#include <thread>
+
 #include "Log.h"
 #include "DxwWindow.h"
 #include "DxwSharedContext.h"
@@ -16,8 +18,8 @@ DxwWindow::DxwWindow()
 
 void DxwWindow::D3D_Clear()
 {
-	float clearColor[4] = { 0.9, 0.14, 0.12, 1.0f };
-	pD3DDeviceContext->ClearRenderTargetView(pRenderTargetView.Get(), clearColor);
+	float colorDarkGray[4] = { 0.15, 0.15, 0.15, 1.0f };
+	pD3DDeviceContext->ClearRenderTargetView(pRenderTargetView.Get(), colorDarkGray);
 }
 
 void DxwWindow::D2D_Clear()
@@ -39,6 +41,29 @@ void DxwWindow::DX_Present(int vsync = 1)
 {
 	// 1 = vsync enabled, 0 = immediate presentation
 	pSwapChain->Present(vsync, 0);
+}
+
+void DxwWindow::RunThreadedTest()
+{
+	Vertex vertices[] =
+	{
+		{ DirectX::XMFLOAT3(0.0f,  0.5f, 0.0f), DirectX::XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f) }, // Top vertex, red
+		{ DirectX::XMFLOAT3(0.5f, -0.5f, 0.0f), DirectX::XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f) }, // Bottom-right vertex, green
+		{ DirectX::XMFLOAT3(-0.5f, -0.5f, 0.0f), DirectX::XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f) }  // Bottom-left vertex, blue
+	};
+
+	std::thread([&]()
+		{
+			bool flag = false;
+			float colorRed[4] = { 0.7, 0.14, 0.12, 1.0f };
+			float colorGreen[4] = { 0.14, 0.7, 0.12, 1.0f };
+
+			while (true)
+			{
+				D3D_Clear();
+				DX_Present(1);
+			}
+		}).detach();
 }
 
 void DxwWindow::InitDirect3D(HWND hWnd)
@@ -119,18 +144,18 @@ void DxwWindow::InitDirect3D(HWND hWnd)
 	verts.resize(DRAWLIB_COUNT);
 	for (size_t i = 0; i < DRAWLIB_COUNT; ++i)
 	{
-		float x = ConvertPixelToNDCX(0, 800, 800.0f / 600.0f);
-		float y = ConvertPixelToNDCY(0, 600);
+		float x = Utils::ConvertPixelToNDCX(0, 800, 800.0f / 600.0f);
+		float y = Utils::ConvertPixelToNDCY(0, 600);
 		verts[i].position = DirectX::XMFLOAT3(x, y, 0.0f);
 		verts[i].color = DirectX::XMFLOAT4(1, 0, 0, 1);
 	}
 
 	for (size_t i = 0; i < DRAWLIB_COUNT; i += 2)
 	{
-		float x = ConvertPixelToNDCX(std::rand() % 800, 800, 800.0f / 600.0f);
-		float y = ConvertPixelToNDCY(std::rand() % 600, 600);
+		float x = Utils::ConvertPixelToNDCX(std::rand() % 800, 800, 800.0f / 600.0f);
+		float y = Utils::ConvertPixelToNDCY(std::rand() % 600, 600);
 		verts[i].position = DirectX::XMFLOAT3(x, y, 0.0f);
-		verts[i + 1].color = DirectX::XMFLOAT4(RandomFloat(-1.0f, 1.0f), RandomFloat(-1.0f, 1.0f), RandomFloat(-1.0f, 1.0f), 1);
+		verts[i + 1].color = DirectX::XMFLOAT4(Utils::RandomFloat(-1.0f, 1.0f), Utils::RandomFloat(-1.0f, 1.0f), Utils::RandomFloat(-1.0f, 1.0f), 1);
 	}
 
 	D3D11_BUFFER_DESC bufferDesc = {};
@@ -327,12 +352,18 @@ void DxwWindow::CreateTextResources()
 	}
 }
 
+bool DxwWindow::IsInitialized()
+{
+	return isDirectXInitialized;
+}
+
 void DxwWindow::InitDirectX(HWND hWnd)
 {
 	LOG_DEBUG("DirectX initialization started");
 	InitDirect3D(hWnd);
 	InitDirect2D();
 	CreateTextResources();
+	isDirectXInitialized = true;
 	LOG_INFO("DirectX initialization complete");
 }
 
