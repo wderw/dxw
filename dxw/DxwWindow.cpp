@@ -52,6 +52,57 @@ void DxwWindow::RunThreadedTest()
 			float colorGreen[4] = { 0.14, 0.7, 0.12, 1.0f };
 			float fi = 0;
 
+			const float factor = 0.1f;
+			std::vector<Vertex> vertices =
+			{
+				{ DirectX::XMFLOAT3(0.0f * factor,  1.0f * factor,  0.0f * factor), DirectX::XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f) }, // A (Top)
+				{ DirectX::XMFLOAT3(1.0f * factor, -1.0f * factor, -1.0f * factor), DirectX::XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f) }, // B (Bottom-Right)
+				{ DirectX::XMFLOAT3(-1.0f * factor, -1.0f * factor, -1.0f * factor), DirectX::XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f) }, // C (Bottom-Left)
+				{ DirectX::XMFLOAT3(0.0f * factor, -1.0f * factor,  1.0f * factor), DirectX::XMFLOAT4(1.0f, 1.0f, 0.0f, 1.0f) }  // D (Back)
+			};
+
+			std::vector<Vertex> verts;
+			verts.reserve(12);
+
+			// Face ABC
+			verts.push_back(vertices[0]); // A
+			verts.push_back(vertices[1]); // B
+			verts.push_back(vertices[2]); // C
+
+			// Face ABD
+			verts.push_back(vertices[0]); // A
+			verts.push_back(vertices[1]); // B
+			verts.push_back(vertices[3]); // D
+
+			// Face ACD
+			verts.push_back(vertices[0]); // A
+			verts.push_back(vertices[2]); // C
+			verts.push_back(vertices[3]); // D
+
+			// Face BCD
+			verts.push_back(vertices[1]); // B
+			verts.push_back(vertices[2]); // C
+			verts.push_back(vertices[3]); // D
+
+
+			D3D11_BUFFER_DESC bufferDesc = {};
+			bufferDesc.Usage = D3D11_USAGE_DEFAULT;
+			bufferDesc.ByteWidth = sizeof(Vertex) * static_cast<UINT>(verts.size());
+			bufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+			bufferDesc.CPUAccessFlags = 0;
+
+			D3D11_SUBRESOURCE_DATA initData = {};
+			initData.pSysMem = verts.data();
+
+			LOG_DEBUG("Creating vertex buffer");
+			HRESULT hr = pD3DDevice->CreateBuffer(&bufferDesc, &initData, pVertexBuffer.GetAddressOf());
+			if (FAILED(hr))
+			{
+				LOG_ERROR("Failed to create vertex buffer!");
+				return;
+			}
+
+
 			UINT stride = sizeof(Vertex);
 			UINT offset = 0;
 			pD3DDeviceContext->IASetInputLayout(pInputLayout.Get());
@@ -80,7 +131,8 @@ void DxwWindow::RunThreadedTest()
 			);
 
 			ComPtr<ID3D11Buffer> transformBuffer = nullptr;
-			D3D11_BUFFER_DESC bufferDesc;
+
+			//D3D11_BUFFER_DESC bufferDesc;
 			ZeroMemory(&bufferDesc, sizeof(D3D11_BUFFER_DESC));
 			bufferDesc.Usage = D3D11_USAGE_DEFAULT;
 			bufferDesc.ByteWidth = sizeof(TransformBuffer);
@@ -95,15 +147,6 @@ void DxwWindow::RunThreadedTest()
 			transformBufferData.projection = DirectX::XMMatrixTranspose(projectionMatrix);
 
 			pD3DDeviceContext->UpdateSubresource(transformBuffer.Get(), 0, nullptr, &transformBufferData, 0, 0);
-
-			// To disable back-face culling
-			//D3D11_RASTERIZER_DESC rasterDesc = {};
-			//rasterDesc.FillMode = D3D11_FILL_SOLID;
-			//rasterDesc.CullMode = D3D11_CULL_NONE; // Disable culling
-
-			//ID3D11RasterizerState* rasterState;
-			//pD3DDevice->CreateRasterizerState(&rasterDesc, &rasterState);
-			//pD3DDeviceContext->RSSetState(rasterState);
 
 			pD2DDeviceContext->CreateSolidColorBrush(
 				D2D1::ColorF(D2D1::ColorF(0, 1, 0, 1.0f)),
@@ -284,56 +327,6 @@ void DxwWindow::InitDirect3D(HWND hWnd)
 		verts[i + 1].color = DirectX::XMFLOAT4(Utils::RandomFloat(-1.0f, 1.0f), Utils::RandomFloat(-1.0f, 1.0f), Utils::RandomFloat(-1.0f, 1.0f), 1);
 	}
 	*/
-
-	const float factor = 0.1f;
-	std::vector<Vertex> vertices =
-	{
-		{ DirectX::XMFLOAT3(0.0f * factor,  1.0f * factor,  0.0f * factor), DirectX::XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f) }, // A (Top)
-		{ DirectX::XMFLOAT3(1.0f * factor, -1.0f * factor, -1.0f * factor), DirectX::XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f) }, // B (Bottom-Right)
-		{ DirectX::XMFLOAT3(-1.0f * factor, -1.0f * factor, -1.0f * factor), DirectX::XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f) }, // C (Bottom-Left)
-		{ DirectX::XMFLOAT3(0.0f * factor, -1.0f * factor,  1.0f * factor), DirectX::XMFLOAT4(1.0f, 1.0f, 0.0f, 1.0f) }  // D (Back)
-	};
-
-	std::vector<Vertex> verts;
-	verts.reserve(12);
-
-	// Face ABC
-	verts.push_back(vertices[0]); // A
-	verts.push_back(vertices[1]); // B
-	verts.push_back(vertices[2]); // C
-
-	// Face ABD
-	verts.push_back(vertices[0]); // A
-	verts.push_back(vertices[1]); // B
-	verts.push_back(vertices[3]); // D
-
-	// Face ACD
-	verts.push_back(vertices[0]); // A
-	verts.push_back(vertices[2]); // C
-	verts.push_back(vertices[3]); // D
-
-	// Face BCD
-	verts.push_back(vertices[1]); // B
-	verts.push_back(vertices[2]); // C
-	verts.push_back(vertices[3]); // D
-
-
-	D3D11_BUFFER_DESC bufferDesc = {};
-	bufferDesc.Usage = D3D11_USAGE_DEFAULT;
-	bufferDesc.ByteWidth = sizeof(Vertex) * static_cast<UINT>(verts.size());
-	bufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-	bufferDesc.CPUAccessFlags = 0;
-
-	D3D11_SUBRESOURCE_DATA initData = {};
-	initData.pSysMem = verts.data();
-
-	LOG_DEBUG("Creating vertex buffer");
-	hr = pD3DDevice->CreateBuffer(&bufferDesc, &initData, pVertexBuffer.GetAddressOf());
-	if (FAILED(hr))
-	{
-		LOG_ERROR("Failed to create vertex buffer!");
-		return;
-	}
 
 	// memory layout
 	LOG_DEBUG("Preparing buffer memory layout");
