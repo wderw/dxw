@@ -21,7 +21,6 @@ typedef void(__stdcall* DXW_DemoNRTFunc)();
 typedef void(__stdcall* DXW_ResizeWindowFunc)(unsigned int, unsigned int);
 typedef void(__stdcall* DXW_ReleaseDxwWindowsFunc)();
 
-
 DXW_SetTargetWindowFunc         DXW_SetTargetWindow         = nullptr;
 DXW_InitWindowFunc              DXW_InitWindow              = nullptr;
 DXW_D3D_ClearFunc               DXW_D3D_Clear               = nullptr;
@@ -34,7 +33,6 @@ DXW_RunThreadedTestFunc         DXW_RunThreadedTest         = nullptr;
 DXW_DemoNRTFunc                 DXW_DemoNRT                 = nullptr;
 DXW_ResizeWindowFunc            DXW_ResizeWindow            = nullptr;
 DXW_ReleaseDxwWindowsFunc       DXW_ReleaseDxwWindows       = nullptr;
-
 
 const std::wstring libraryName = L"dxw.dll";
 void CreateDrawingPanel(HWND parentHwnd);
