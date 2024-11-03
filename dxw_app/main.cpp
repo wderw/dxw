@@ -17,7 +17,7 @@ typedef void(__stdcall* DXW_D2D_ClearFunc)();
 typedef void(__stdcall* DXW_PresentFunc)(int);
 typedef bool(__stdcall* DXW_IsInitializedFunc)();
 typedef void(__stdcall* DXW_RunThreadedTestFunc)();
-typedef void(__stdcall* DXW_NRTDemoFunc)();
+typedef void(__stdcall* DXW_DemoNRTFunc)();
 typedef void(__stdcall* DXW_ResizeWindowFunc)(unsigned int, unsigned int);
 
 DXW_SetTargetWindowFunc DXW_SetTargetWindow = nullptr;
@@ -29,7 +29,7 @@ DXW_D2D_ClearFunc       DXW_D2D_Clear       = nullptr;
 DXW_PresentFunc         DXW_Present         = nullptr;
 DXW_IsInitializedFunc   DXW_IsInitialized   = nullptr;
 DXW_RunThreadedTestFunc DXW_RunThreadedTest = nullptr;
-DXW_NRTDemoFunc         DXW_NRTDemo         = nullptr;
+DXW_DemoNRTFunc         DXW_DemoNRT         = nullptr;
 DXW_ResizeWindowFunc    DXW_ResizeWindow    = nullptr;
 
 
@@ -155,12 +155,12 @@ bool LoadWrapperDll()
             MessageBox(nullptr, errorMsg, _T("Error"), MB_OK);
         }
 
-        DXW_NRTDemo = (DXW_NRTDemoFunc)GetProcAddress(hDLL, "DXW_NRTDemo");
-        if (!DXW_NRTDemo)
+        DXW_DemoNRT = (DXW_DemoNRTFunc)GetProcAddress(hDLL, "DXW_DemoNRT");
+        if (!DXW_DemoNRT)
         {
             DWORD error = GetLastError();
             TCHAR errorMsg[256];
-            _stprintf_s(errorMsg, _T("DXW_NRTDemo GetProcAddress failed. Error code: %lu"), error);
+            _stprintf_s(errorMsg, _T("DXW_DemoNRT GetProcAddress failed. Error code: %lu"), error);
             MessageBox(nullptr, errorMsg, _T("Error"), MB_OK);
         }
     }
@@ -190,7 +190,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             int height = HIWORD(lParam);
             DXW_ResizeWindow(width, height);
 
-            DXW_NRTDemo();
+            DXW_DemoNRT();
         }
         return 0;
     }
@@ -255,6 +255,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     DXW_SetTargetWindow(id); // redundant but fine - target window is always the last added window
     //DXW_RunThreadedTest();
+    DXW_DemoNRT();
 
     MSG msg = {};
     while (GetMessage(&msg, nullptr, 0, 0))

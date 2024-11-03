@@ -40,7 +40,7 @@ void DXW_RunThreadedTest()
 	DxwSharedContext::GetInstance().GetCurrentWindow()->RunThreadedTest();
 }
 
-void DXW_NRTDemo()
+void DXW_DemoNRT()
 {
 	LOG_TRACE("DXW_NRTDemo called");
 	DxwSharedContext::GetInstance().GetCurrentWindow()->NRTDemo();

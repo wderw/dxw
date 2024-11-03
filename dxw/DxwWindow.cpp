@@ -210,6 +210,7 @@ void DxwWindow::ResizeD3DSwapChain(UINT width, UINT height)
 
 	// reinitialize required direct2d resources
 	InitDirect2D();
+	LOG_INFO("Swap chain size reconfiguration complete");
 }
 
 void DxwWindow::NRTDemo()
