@@ -17,6 +17,7 @@ typedef void(__stdcall* DXW_D2D_ClearFunc)();
 typedef void(__stdcall* DXW_PresentFunc)(int);
 typedef bool(__stdcall* DXW_IsInitializedFunc)();
 typedef void(__stdcall* DXW_RunThreadedTestFunc)();
+typedef void(__stdcall* DXW_NRTDemoFunc)();
 typedef void(__stdcall* DXW_ResizeWindowFunc)(unsigned int, unsigned int);
 
 DXW_SetTargetWindowFunc DXW_SetTargetWindow = nullptr;
@@ -28,7 +29,8 @@ DXW_D2D_ClearFunc       DXW_D2D_Clear       = nullptr;
 DXW_PresentFunc         DXW_Present         = nullptr;
 DXW_IsInitializedFunc   DXW_IsInitialized   = nullptr;
 DXW_RunThreadedTestFunc DXW_RunThreadedTest = nullptr;
-DXW_ResizeWindowFunc    DXW_ResizeWindow = nullptr;
+DXW_NRTDemoFunc         DXW_NRTDemo         = nullptr;
+DXW_ResizeWindowFunc    DXW_ResizeWindow    = nullptr;
 
 
 const std::wstring libraryName = L"dxw.dll";
@@ -152,6 +154,15 @@ bool LoadWrapperDll()
             _stprintf_s(errorMsg, _T("DXW_ResizeWindow GetProcAddress failed. Error code: %lu"), error);
             MessageBox(nullptr, errorMsg, _T("Error"), MB_OK);
         }
+
+        DXW_NRTDemo = (DXW_NRTDemoFunc)GetProcAddress(hDLL, "DXW_NRTDemo");
+        if (!DXW_NRTDemo)
+        {
+            DWORD error = GetLastError();
+            TCHAR errorMsg[256];
+            _stprintf_s(errorMsg, _T("DXW_NRTDemo GetProcAddress failed. Error code: %lu"), error);
+            MessageBox(nullptr, errorMsg, _T("Error"), MB_OK);
+        }
     }
 
     std::cout << "Wrapper loaded successfully!" << std::endl;
@@ -171,16 +182,18 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
     switch (message)
     {
-    //case WM_SIZE:
-    //{
-    //    if (DXW_IsInitialized() == true)
-    //    {
-    //        int width = LOWORD(lParam);
-    //        int height = HIWORD(lParam);
-    //        DXW_ResizeWindow(width, height);
-    //    }
-    //    return 0;
-    //}
+    case WM_SIZE:
+    {
+        if (DXW_IsInitialized() == true)
+        {
+            int width = LOWORD(lParam);
+            int height = HIWORD(lParam);
+            DXW_ResizeWindow(width, height);
+
+            DXW_NRTDemo();
+        }
+        return 0;
+    }
     case WM_CREATE:
     {
         CreateDrawingPanel(hWnd);
@@ -241,7 +254,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     std::cout << "Window allocated id was: " << id << std::endl;
 
     DXW_SetTargetWindow(id); // redundant but fine - target window is always the last added window
-    DXW_RunThreadedTest();
+    //DXW_RunThreadedTest();
 
     MSG msg = {};
     while (GetMessage(&msg, nullptr, 0, 0))

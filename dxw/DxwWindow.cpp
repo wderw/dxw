@@ -145,6 +145,9 @@ void DxwWindow::ResizeD3DSwapChain(UINT width, UINT height)
 	// RenderTargetView and backBuffer must be released
 	// before attempting to resize the swap chain buffer!
 	pRenderTargetView.Reset();
+	pDepthStencilBuffer.Reset();
+	pDepthStencilView.Reset();
+
 	HRESULT hr = pSwapChain->ResizeBuffers(
 		0,
 		width,
@@ -205,7 +208,106 @@ void DxwWindow::ResizeD3DSwapChain(UINT width, UINT height)
 	// Set the render target and depth stencil view to the output merger stage
 	pD3DDeviceContext->OMSetRenderTargets(1, pRenderTargetView.GetAddressOf(), pDepthStencilView.Get());
 
+	// reinitialize required direct2d resources
 	InitDirect2D();
+}
+
+void DxwWindow::NRTDemo()
+{
+	float fi = 0;
+
+	std::vector<Vertex> lineVerts = Utils::GenerateLines(windowWidth, windowHeight);
+	std::vector<Vertex> tetrahedronVerts = Utils::GenerateTetrahedron();
+
+	D3D11_BUFFER_DESC bufferDesc = {};
+	bufferDesc.Usage = D3D11_USAGE_DEFAULT;
+	bufferDesc.ByteWidth = sizeof(Vertex) * static_cast<UINT>(tetrahedronVerts.size());
+	bufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+	bufferDesc.CPUAccessFlags = 0;
+
+	D3D11_SUBRESOURCE_DATA initData = {};
+	initData.pSysMem = tetrahedronVerts.data();
+
+	LOG_DEBUG("Creating vertex buffer");
+	HRESULT hr = pD3DDevice->CreateBuffer(&bufferDesc, &initData, pVertexBuffer.GetAddressOf());
+	if (FAILED(hr))
+	{
+		LOG_ERROR("Failed to create vertex buffer!");
+		return;
+	}
+
+	UINT stride = sizeof(Vertex);
+	UINT offset = 0;
+	pD3DDeviceContext->IASetInputLayout(pInputLayout.Get());
+	pD3DDeviceContext->IASetVertexBuffers(0, 1, pVertexBuffer.GetAddressOf(), &stride, &offset);
+
+	pD3DDeviceContext->VSSetShader(pVertexShader.Get(), nullptr, 0);
+	pD3DDeviceContext->PSSetShader(pPixelShader.Get(), nullptr, 0);
+
+	ZeroMemory(&bufferDesc, sizeof(D3D11_BUFFER_DESC));
+	bufferDesc.Usage = D3D11_USAGE_DEFAULT;
+	bufferDesc.ByteWidth = sizeof(TransformBuffer);
+	bufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	bufferDesc.CPUAccessFlags = 0;
+
+	pD3DDevice->CreateBuffer(&bufferDesc, nullptr, transformBuffer.GetAddressOf());
+	pD3DDeviceContext->VSSetConstantBuffers(0, 1, transformBuffer.GetAddressOf());
+	D3D_UpdateMatrixSubresources();
+
+	pD2DDeviceContext->CreateSolidColorBrush(
+		D2D1::ColorF(D2D1::ColorF(0, 1, 0, 1.0f)),
+		pDefaultBrush.GetAddressOf()
+	);
+
+	pD2DDeviceContext->CreateSolidColorBrush(
+		D2D1::ColorF(D2D1::ColorF(1, 1, 1, 0.3f)),
+		pDefaultBrush2.GetAddressOf()
+	);
+
+	fi += 1.0f;
+	D3D_Clear();
+
+	D2D_BeginDraw();
+	pD2DDeviceContext->FillRoundedRectangle(D2D1::RoundedRect(D2D1::RectF(250, 250, 600, 400), 15.0f, 15.0f), pDefaultBrush2.Get());
+	D2D_EndDraw();
+
+	pD3DDeviceContext->ClearDepthStencilView(pDepthStencilView.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
+
+	D3D_SetPerspectiveProjectionMatrix(DirectX::XM_PIDIV4, static_cast<float>(windowWidth) / static_cast<float>(windowHeight), 0.01f, 100.0f);
+	D3D_SetTranslation(0, 0, 1);
+	D3D_SetScale(1.5f, 1.5f, 1.5f);
+	D3D_SetRotation(fi, fi + fi / 2, 0);
+	D3D_RecalculateTransformMatrix();
+	D3D_UpdateMatrixSubresources();
+
+	D3D_SetTopology(D3D11_PRIMITIVE_TOPOLOGY_LINESTRIP);
+	D3D_Draw(12, 0);
+
+	D3D_SetScale(1.2f, 1.2f, 1.2f);
+	D3D_SetRotation(fi / 3, fi * 1.2f, fi / 2);
+	D3D_RecalculateTransformMatrix();
+	D3D_UpdateMatrixSubresources();
+
+	D3D_SetTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+	D3D_Draw(12, 0);
+
+	//D2D_BeginDraw();
+
+	//wchar_t fpsText[80] = L"TEST test za¿ó³æ gêœl¹ jaŸñ The quick brown fox jumps over the lazy dog";
+	//D2D1_RECT_F textRect = D2D1::RectF(0, 0, 250, 50);
+
+	//pD2DDeviceContext->DrawTextW(
+	//	fpsText,
+	//	wcslen(fpsText),
+	//	pDefaultTextFormat.Get(),
+	//	textRect,
+	//	pDefaultBrush.Get()
+	//);
+	//pD2DDeviceContext->FillRoundedRectangle(D2D1::RoundedRect(D2D1::RectF(80, 80, 400, 500), 15.0f, 15.0f), pDefaultBrush2.Get());
+
+	//D2D_EndDraw();
+
+	DX_Present(1);
 }
 
 void DxwWindow::RunThreadedTest()
