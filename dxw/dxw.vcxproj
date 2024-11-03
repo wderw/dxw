@@ -159,6 +159,7 @@
     <ClCompile Include="DxwWindow.cpp" />
     <ClCompile Include="dxw_interface.cpp" />
     <ClCompile Include="Log.cpp" />
+    <ClCompile Include="Utils.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DxwSharedContext.h" />

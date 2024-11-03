@@ -1,6 +1,10 @@
 #pragma once
 
 #include <windows.h>
+#include <unordered_map>
+#include <memory>
+#include <functional>
+
 #include <d3d11.h>
 #include <d3dcompiler.h>
 #include <dxgi.h>
@@ -9,9 +13,6 @@
 #include <d2d1helper.h>
 #include <dwrite.h>
 #include <wrl.h> // ComPtr
-#include <unordered_map>
-#include <memory>
-#include <functional>
 
 #include "TransformBuffer.h"
 
@@ -29,9 +30,9 @@ public:
 	void InitDirect3D(HWND);
 	void InitDirect2D();
 	void CreateTextResources();
-	bool IsInitialized();
+	bool IsInitialized() const;
 
-	int GetId() { return id; }
+	int GetId() const { return id; }
 	DirectX::XMMATRIX RecalculateTransformMatrix();
 
 	void D3D_Clear();
@@ -51,8 +52,7 @@ public:
 	void D2D_EndDraw();
 	void DX_Present(int);
 	void RunThreadedTest();
-	void ResizeWindow(int, int);
-
+	void ResizeWindow(unsigned int, unsigned int);
 
 	bool operator==(const DxwWindow& other) const
 	{
@@ -60,14 +60,15 @@ public:
 	}
 
 private:
+	void SetWindowSize(int, int);
+	void SetD3DViewport(int, int);
+	void ResizeD3DSwapChain(UINT, UINT);
+
 	int id{-1};
 	static int instanceCounter;
 	bool isDirectXInitialized{ false };
 	int windowWidth{ 0 };
 	int windowHeight{ 0 };
-
-	void SetWindowSize(int, int);
-	void UpdateViewport(int, int);
 
 	DirectX::XMMATRIX scalingMatrix{ DirectX::XMMatrixIdentity() };
 	DirectX::XMMATRIX rotationMatrix{ DirectX::XMMatrixIdentity() };
@@ -94,7 +95,8 @@ private:
 	ComPtr<ID3D11Texture2D> pDepthStencilBuffer{ nullptr };
 	ComPtr<ID3D11DepthStencilView> pDepthStencilView{ nullptr };
 	ComPtr<ID3D11Buffer> transformBuffer{ nullptr };
-	TransformBuffer transformBufferData;
+
+	TransformBuffer transformBufferData{ DirectX::XMMatrixIdentity(), DirectX::XMMatrixIdentity() };
 };
 
 }

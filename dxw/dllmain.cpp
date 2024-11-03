@@ -1,4 +1,5 @@
 #include <windows.h>
+
 #include "Log.h"
 #include "DxwSharedContext.h"
 

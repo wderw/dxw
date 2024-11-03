@@ -1,6 +1,7 @@
 #include <memory>
 
 #include "dxw_interface.h"
+
 #include "Log.h"
 #include "DxwWindow.h"
 #include "DxwSharedContext.h"
@@ -21,7 +22,7 @@ int DXW_InitWindow(HWND hWnd)
 	return id;
 }
 
-void DXW_ResizeWindow(int width, int height)
+void DXW_ResizeWindow(unsigned int width, unsigned int height)
 {
 	LOG_TRACE("DXW_ResizeWindow called");
 	DxwSharedContext::GetInstance().GetCurrentWindow()->ResizeWindow(width, height);
@@ -52,10 +53,9 @@ bool DXW_IsInitialized()
 	{
 		return DxwSharedContext::GetInstance().GetCurrentWindow()->IsInitialized();
 	}
-	else
-	{
-		LOG_WARN("No windows available in SharedContext!");
-	}
+
+	LOG_WARN("No windows available in SharedContext!");
+	return false;
 }
 
 void DXW_D3D_Clear()

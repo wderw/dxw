@@ -17,6 +17,7 @@ typedef void(__stdcall* DXW_D2D_ClearFunc)();
 typedef void(__stdcall* DXW_PresentFunc)(int);
 typedef bool(__stdcall* DXW_IsInitializedFunc)();
 typedef void(__stdcall* DXW_RunThreadedTestFunc)();
+typedef void(__stdcall* DXW_ResizeWindowFunc)(unsigned int, unsigned int);
 
 DXW_SetTargetWindowFunc DXW_SetTargetWindow = nullptr;
 DXW_InitWindowFunc      DXW_InitWindow      = nullptr;
@@ -27,6 +28,8 @@ DXW_D2D_ClearFunc       DXW_D2D_Clear       = nullptr;
 DXW_PresentFunc         DXW_Present         = nullptr;
 DXW_IsInitializedFunc   DXW_IsInitialized   = nullptr;
 DXW_RunThreadedTestFunc DXW_RunThreadedTest = nullptr;
+DXW_ResizeWindowFunc    DXW_ResizeWindow = nullptr;
+
 
 const std::wstring libraryName = L"dxw.dll";
 void CreateDrawingPanel(HWND parentHwnd);
@@ -140,6 +143,15 @@ bool LoadWrapperDll()
             _stprintf_s(errorMsg, _T("DXW_RunThreadedTest GetProcAddress failed. Error code: %lu"), error);
             MessageBox(nullptr, errorMsg, _T("Error"), MB_OK);
         }
+
+        DXW_ResizeWindow = (DXW_ResizeWindowFunc)GetProcAddress(hDLL, "DXW_ResizeWindow");
+        if (!DXW_ResizeWindow)
+        {
+            DWORD error = GetLastError();
+            TCHAR errorMsg[256];
+            _stprintf_s(errorMsg, _T("DXW_ResizeWindow GetProcAddress failed. Error code: %lu"), error);
+            MessageBox(nullptr, errorMsg, _T("Error"), MB_OK);
+        }
     }
 
     std::cout << "Wrapper loaded successfully!" << std::endl;
@@ -159,6 +171,16 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
     switch (message)
     {
+    //case WM_SIZE:
+    //{
+    //    if (DXW_IsInitialized() == true)
+    //    {
+    //        int width = LOWORD(lParam);
+    //        int height = HIWORD(lParam);
+    //        DXW_ResizeWindow(width, height);
+    //    }
+    //    return 0;
+    //}
     case WM_CREATE:
     {
         CreateDrawingPanel(hWnd);

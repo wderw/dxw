@@ -1,11 +1,10 @@
 #include <thread>
-#include <array>
+
+#include "DxwWindow.h"
 
 #include "Log.h"
-#include "DxwWindow.h"
 #include "DxwSharedContext.h"
 #include "Vertex.h"
-#include "TransformBuffer.h"
 #include "Utils.h"
 
 namespace dxw
@@ -20,7 +19,7 @@ DxwWindow::DxwWindow()
 
 void DxwWindow::D3D_Clear()
 {
-	float colorDarkGray[4] = { 0.15, 0.15, 0.15, 1.0f };
+	float colorDarkGray[4] = { 0.15f, 0.15f, 0.15f, 1.0f };
 	pD3DDeviceContext->ClearRenderTargetView(pRenderTargetView.Get(), colorDarkGray);
 }
 
@@ -111,15 +110,17 @@ DirectX::XMMATRIX DxwWindow::RecalculateTransformMatrix()
 
 void DxwWindow::SetWindowSize(int width, int height)
 {
+	LOG_DEBUG("Setting new DxwWindow size: [{},{}]", width, height);
 	windowWidth = width;
 	windowHeight = height;
 }
 
-void DxwWindow::UpdateViewport(int width, int height)
+void DxwWindow::SetD3DViewport(int width, int height)
 {
-	D3D11_VIEWPORT viewport;
-	viewport.Width = width;
-	viewport.Height = height;
+	LOG_DEBUG("Setting D3D Viewport");
+	D3D11_VIEWPORT viewport{};
+	viewport.Width = static_cast<FLOAT>(width);
+	viewport.Height = static_cast<FLOAT>(height);
 	viewport.MinDepth = 0.0f;
 	viewport.MaxDepth = 1.0f;
 	viewport.TopLeftX = 0.0f;
@@ -127,10 +128,89 @@ void DxwWindow::UpdateViewport(int width, int height)
 	pD3DDeviceContext->RSSetViewports(1, &viewport);
 }
 
+void DxwWindow::ResizeWindow(unsigned int w, unsigned int h)
+{
+	SetWindowSize(w, h);
+	ResizeD3DSwapChain(w, h);
+	SetD3DViewport(w, h);
+}
+
+void DxwWindow::ResizeD3DSwapChain(UINT width, UINT height)
+{
+	LOG_DEBUG("Requested new swap chain width: {} height: {}", width, height);
+
+	// RenderTargetView and backBuffer must be released
+	// before attempting to resize the swap chain buffer!
+	pRenderTargetView.Reset();
+	HRESULT hr = pSwapChain->ResizeBuffers(
+		0,
+		width,
+		height,
+		DXGI_FORMAT_UNKNOWN,
+		0
+	);
+
+	if (FAILED(hr))
+	{
+		LOG_ERROR("Could not resize swap chain buffer!");
+		Utils::HandleHResultError(hr);
+		return;
+	}
+
+	// recreate the render target view from the new back buffer
+	ComPtr<ID3D11Texture2D> backBuffer;
+	hr = pSwapChain->GetBuffer(0, IID_PPV_ARGS(backBuffer.GetAddressOf()));
+	if (FAILED(hr))
+	{
+		LOG_ERROR("Could not get back buffer!");
+		return;
+	}
+
+	hr = pD3DDevice->CreateRenderTargetView(backBuffer.Get(), nullptr, pRenderTargetView.GetAddressOf());
+	if (FAILED(hr))
+	{
+		LOG_ERROR("Could not create render target view!");
+		return;
+	}
+
+	// Recreate the depth stencil buffer and view if needed
+	D3D11_TEXTURE2D_DESC depthDesc = {};
+	depthDesc.Width = width;
+	depthDesc.Height = height;
+	depthDesc.MipLevels = 1;
+	depthDesc.ArraySize = 1;
+	depthDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+	depthDesc.SampleDesc.Count = 1;
+	depthDesc.SampleDesc.Quality = 0;
+	depthDesc.Usage = D3D11_USAGE_DEFAULT;
+	depthDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+
+	hr = pD3DDevice->CreateTexture2D(&depthDesc, nullptr, pDepthStencilBuffer.GetAddressOf());
+	if (FAILED(hr))
+	{
+		LOG_ERROR("Could not create depth stencil buffer!");
+		return;
+	}
+
+	hr = pD3DDevice->CreateDepthStencilView(pDepthStencilBuffer.Get(), nullptr, pDepthStencilView.GetAddressOf());
+	if (FAILED(hr))
+	{
+		LOG_ERROR("Could not create depth stencil view!");
+		return;
+	}
+
+	// Set the render target and depth stencil view to the output merger stage
+	pD3DDeviceContext->OMSetRenderTargets(1, pRenderTargetView.GetAddressOf(), pDepthStencilView.Get());
+}
+
 void DxwWindow::RunThreadedTest()
 {
+	ResizeWindow(800, 600);
+
+
 	std::thread([&]()
 		{
+
 			float fi = 0;
 
 			std::vector<Vertex> lineVerts = Utils::GenerateLines(windowWidth, windowHeight);
@@ -171,24 +251,24 @@ void DxwWindow::RunThreadedTest()
 			pD3DDeviceContext->VSSetConstantBuffers(0, 1, transformBuffer.GetAddressOf());
 			D3D_UpdateMatrixSubresources();
 
-			pD2DDeviceContext->CreateSolidColorBrush(
-				D2D1::ColorF(D2D1::ColorF(0, 1, 0, 1.0f)),
-				pDefaultBrush.GetAddressOf()
-			);
+			//pD2DDeviceContext->CreateSolidColorBrush(
+			//	D2D1::ColorF(D2D1::ColorF(0, 1, 0, 1.0f)),
+			//	pDefaultBrush.GetAddressOf()
+			//);
 
-			pD2DDeviceContext->CreateSolidColorBrush(
-				D2D1::ColorF(D2D1::ColorF(1, 1, 1, 0.3f)),
-				pDefaultBrush2.GetAddressOf()
-			);
+			//pD2DDeviceContext->CreateSolidColorBrush(
+			//	D2D1::ColorF(D2D1::ColorF(1, 1, 1, 0.3f)),
+			//	pDefaultBrush2.GetAddressOf()
+			//);
 
 			while (true)
 			{
 				fi += 1.0f;
 				D3D_Clear();
 
-				D2D_BeginDraw();
-				pD2DDeviceContext->FillRoundedRectangle(D2D1::RoundedRect(D2D1::RectF(250, 250, 600, 400), 15.0f, 15.0f), pDefaultBrush2.Get());
-				D2D_EndDraw();
+				//D2D_BeginDraw();
+				//pD2DDeviceContext->FillRoundedRectangle(D2D1::RoundedRect(D2D1::RectF(250, 250, 600, 400), 15.0f, 15.0f), pDefaultBrush2);
+				//D2D_EndDraw();
 
 				pD3DDeviceContext->ClearDepthStencilView(pDepthStencilView.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
 
@@ -210,30 +290,25 @@ void DxwWindow::RunThreadedTest()
 				D3D_SetTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
 				D3D_Draw(12, 0);
 
-				D2D_BeginDraw();
+				//D2D_BeginDraw();
 
-				wchar_t fpsText[80] = L"TEST test za¿ó³æ gêœl¹ jaŸñ The quick brown fox jumps over the lazy dog";
-				D2D1_RECT_F textRect = D2D1::RectF(0, 0, 250, 50);
+				//wchar_t fpsText[80] = L"TEST test za¿ó³æ gêœl¹ jaŸñ The quick brown fox jumps over the lazy dog";
+				//D2D1_RECT_F textRect = D2D1::RectF(0, 0, 250, 50);
 
-				pD2DDeviceContext->DrawTextW(
-					fpsText,
-					wcslen(fpsText),
-					pDefaultTextFormat.Get(),
-					textRect,
-					pDefaultBrush.Get()
-				);
-				pD2DDeviceContext->FillRoundedRectangle(D2D1::RoundedRect(D2D1::RectF(80, 80, 400, 500), 15.0f, 15.0f), pDefaultBrush2.Get());
+				//pD2DDeviceContext->DrawTextW(
+				//	fpsText,
+				//	wcslen(fpsText),
+				//	pDefaultTextFormat,
+				//	textRect,
+				//	pDefaultBrush
+				//);
+				//pD2DDeviceContext->FillRoundedRectangle(D2D1::RoundedRect(D2D1::RectF(80, 80, 400, 500), 15.0f, 15.0f), pDefaultBrush2);
 
-				D2D_EndDraw();
+				//D2D_EndDraw();
 
 				DX_Present(1);
 			}
 		}).detach();
-}
-
-void DxwWindow::ResizeWindow(int w, int h)
-{
-	SetWindowSize(w, h);
 }
 
 void DxwWindow::InitDirect3D(HWND hWnd)
@@ -249,13 +324,13 @@ void DxwWindow::InitDirect3D(HWND hWnd)
 	swapChainDesc.BufferCount = 1;
 	swapChainDesc.BufferDesc.Width = windowWidth;
 	swapChainDesc.BufferDesc.Height = windowHeight;
-	swapChainDesc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM; // format for Direct2D
+	swapChainDesc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 	swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
 	swapChainDesc.OutputWindow = hWnd;
 	swapChainDesc.SampleDesc.Count = 1;
 	swapChainDesc.Windowed = TRUE;
 
-	UINT createDeviceFlags = D3D11_CREATE_DEVICE_BGRA_SUPPORT; // flag for Direct2D
+	UINT createDeviceFlags = D3D11_CREATE_DEVICE_BGRA_SUPPORT | D3D11_CREATE_DEVICE_DEBUG;
 	HRESULT hr = D3D11CreateDeviceAndSwapChain(
 		nullptr,
 		D3D_DRIVER_TYPE_HARDWARE,
@@ -277,8 +352,8 @@ void DxwWindow::InitDirect3D(HWND hWnd)
 	}
 
 	LOG_DEBUG("Initializing back buffer");
-	ComPtr<ID3D11Texture2D> pBackBuffer{ nullptr };
-	hr = pSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)pBackBuffer.GetAddressOf());
+	ComPtr<ID3D11Texture2D> backBuffer{ nullptr };
+	hr = pSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)backBuffer.GetAddressOf());
 	if (FAILED(hr))
 	{
 		LOG_ERROR("Failed to get back buffer!");
@@ -286,7 +361,7 @@ void DxwWindow::InitDirect3D(HWND hWnd)
 	}
 
 	LOG_DEBUG("Creating RenderTargetView");
-	hr = pD3DDevice->CreateRenderTargetView(pBackBuffer.Get(), nullptr, pRenderTargetView.GetAddressOf());
+	hr = pD3DDevice->CreateRenderTargetView(backBuffer.Get(), nullptr, pRenderTargetView.GetAddressOf());
 	if (FAILED(hr))
 	{
 		LOG_ERROR("Failed to create RenderTargetView!");
@@ -296,16 +371,16 @@ void DxwWindow::InitDirect3D(HWND hWnd)
 	pD3DDeviceContext->OMSetRenderTargets(1, pRenderTargetView.GetAddressOf(), nullptr);
 
 	LOG_DEBUG("Creating D3D11 Viewport");
-	UpdateViewport(windowWidth, windowHeight);
+	SetD3DViewport(windowWidth, windowHeight);
 
 	// Create the depth buffer description
 	D3D11_TEXTURE2D_DESC depthStencilDesc = {};
-	depthStencilDesc.Width = windowWidth; // Set to your window width
-	depthStencilDesc.Height = windowHeight; // Set to your window height
+	depthStencilDesc.Width = windowWidth;
+	depthStencilDesc.Height = windowHeight;
 	depthStencilDesc.MipLevels = 1;
 	depthStencilDesc.ArraySize = 1;
 	depthStencilDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT; // Common depth format
-	depthStencilDesc.SampleDesc.Count = 1; // No multi-sampling
+	depthStencilDesc.SampleDesc.Count = 1;
 	depthStencilDesc.Usage = D3D11_USAGE_DEFAULT;
 	depthStencilDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
 
@@ -342,14 +417,14 @@ void DxwWindow::InitDirect3D(HWND hWnd)
 	ComPtr<ID3DBlob> pVSBlob{ nullptr };
 	ComPtr<ID3DBlob> pPSBlob{ nullptr };
 
-	hr = D3DCompile(DxwSharedContext::GetInstance().vertexShaderSource, strlen(DxwSharedContext::GetInstance().vertexShaderSource), nullptr, nullptr, nullptr, "main", "vs_5_0", 0, 0, pVSBlob.GetAddressOf(), nullptr);
+	hr = D3DCompile(DxwSharedContext::GetInstance().vertexShaderSource, strlen(DxwSharedContext::GetInstance().vertexShaderSource), nullptr, nullptr, nullptr, "main", "vs_5_0", 0, 0, pVSBlob.ReleaseAndGetAddressOf(), nullptr);
 	if (FAILED(hr))
 	{
 		LOG_ERROR("Failed to compile vertex shader!");
 		return;
 	}
 
-	hr = D3DCompile(DxwSharedContext::GetInstance().pixelShaderSource, strlen(DxwSharedContext::GetInstance().pixelShaderSource), nullptr, nullptr, nullptr, "main", "ps_5_0", 0, 0, pPSBlob.GetAddressOf(), nullptr);
+	hr = D3DCompile(DxwSharedContext::GetInstance().pixelShaderSource, strlen(DxwSharedContext::GetInstance().pixelShaderSource), nullptr, nullptr, nullptr, "main", "ps_5_0", 0, 0, pPSBlob.ReleaseAndGetAddressOf(), nullptr);
 	if (FAILED(hr))
 	{
 		LOG_ERROR("Failed to compile pixel shader!");
@@ -417,8 +492,8 @@ void DxwWindow::InitDirect2D()
 	}
 
 	LOG_DEBUG("Creating IDXGIDevice from D3D device");
-	ComPtr<IDXGIDevice> pDXGIDevice{ nullptr };
-	hr = pD3DDevice->QueryInterface(__uuidof(IDXGIDevice), (void**)pDXGIDevice.GetAddressOf());
+	IDXGIDevice* pDXGIDevice{ nullptr };
+	hr = pD3DDevice->QueryInterface(__uuidof(IDXGIDevice), (void**)&pDXGIDevice);
 	if (FAILED(hr))
 	{
 		LOG_ERROR("Failed to get IDXGIDevice from D3D device.");
@@ -426,7 +501,7 @@ void DxwWindow::InitDirect2D()
 	}
 
 	LOG_DEBUG("Creating Direct2D Device");
-	hr = pD2DFactory->CreateDevice(pDXGIDevice.Get(), pD2DDevice.GetAddressOf());
+	hr = pD2DFactory->CreateDevice(pDXGIDevice, pD2DDevice.ReleaseAndGetAddressOf());
 	if (FAILED(hr) || pD2DDevice == nullptr)
 	{
 		LOG_ERROR("Failed to create Direct2D device.");
@@ -434,7 +509,7 @@ void DxwWindow::InitDirect2D()
 	}
 
 	LOG_DEBUG("Creating Direct2D device context");
-	hr = pD2DDevice->CreateDeviceContext(D2D1_DEVICE_CONTEXT_OPTIONS_ENABLE_MULTITHREADED_OPTIMIZATIONS, pD2DDeviceContext.GetAddressOf());
+	hr = pD2DDevice->CreateDeviceContext(D2D1_DEVICE_CONTEXT_OPTIONS_ENABLE_MULTITHREADED_OPTIMIZATIONS, pD2DDeviceContext.ReleaseAndGetAddressOf());
 	if (FAILED(hr) || pD2DDeviceContext == nullptr)
 	{
 		LOG_ERROR("Failed to create Direct2D device context.");
@@ -505,7 +580,7 @@ void DxwWindow::CreateTextResources()
 	}
 }
 
-bool DxwWindow::IsInitialized()
+bool DxwWindow::IsInitialized() const
 {
 	return isDirectXInitialized;
 }
@@ -514,10 +589,18 @@ void DxwWindow::InitDirectX(HWND hWnd)
 {
 	LOG_DEBUG("DirectX initialization started");
 	InitDirect3D(hWnd);
-	InitDirect2D();
-	CreateTextResources();
+	//InitDirect2D();
+	//CreateTextResources();
 	isDirectXInitialized = true;
 	LOG_INFO("DirectX initialization complete");
+
+#if defined(DEBUG) || defined(_DEBUG)
+	ComPtr<ID3D11Debug> pDebugDevice;
+	if (SUCCEEDED(pD3DDevice->QueryInterface(pDebugDevice.GetAddressOf())))
+	{
+		pDebugDevice->ReportLiveDeviceObjects(D3D11_RLDO_DETAIL);
+	}
+#endif
 }
 
 }

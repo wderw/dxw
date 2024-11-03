@@ -53,7 +53,7 @@ public:
         }
         else
         {
-            LOG_ERROR("Error: window with id: {} was not found!", id);
+            LOG_WARN("Error: window with id: {} was not found!", id);
             return nullptr;
         }
     }
