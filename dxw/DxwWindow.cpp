@@ -139,6 +139,9 @@ void DxwWindow::ResizeD3DSwapChain(UINT width, UINT height)
 {
 	LOG_DEBUG("Requested new swap chain width: {} height: {}", width, height);
 
+	pD2DBitmap.Reset();
+	pD2DDeviceContext.Reset();
+
 	// RenderTargetView and backBuffer must be released
 	// before attempting to resize the swap chain buffer!
 	pRenderTargetView.Reset();
@@ -201,16 +204,16 @@ void DxwWindow::ResizeD3DSwapChain(UINT width, UINT height)
 
 	// Set the render target and depth stencil view to the output merger stage
 	pD3DDeviceContext->OMSetRenderTargets(1, pRenderTargetView.GetAddressOf(), pDepthStencilView.Get());
+
+	InitDirect2D();
 }
 
 void DxwWindow::RunThreadedTest()
 {
-	ResizeWindow(800, 600);
-
+	//ResizeWindow(400, 300);
 
 	std::thread([&]()
 		{
-
 			float fi = 0;
 
 			std::vector<Vertex> lineVerts = Utils::GenerateLines(windowWidth, windowHeight);
@@ -256,19 +259,19 @@ void DxwWindow::RunThreadedTest()
 			//	pDefaultBrush.GetAddressOf()
 			//);
 
-			//pD2DDeviceContext->CreateSolidColorBrush(
-			//	D2D1::ColorF(D2D1::ColorF(1, 1, 1, 0.3f)),
-			//	pDefaultBrush2.GetAddressOf()
-			//);
+			pD2DDeviceContext->CreateSolidColorBrush(
+				D2D1::ColorF(D2D1::ColorF(1, 1, 1, 0.3f)),
+				pDefaultBrush2.GetAddressOf()
+			);
 
 			while (true)
 			{
 				fi += 1.0f;
 				D3D_Clear();
 
-				//D2D_BeginDraw();
-				//pD2DDeviceContext->FillRoundedRectangle(D2D1::RoundedRect(D2D1::RectF(250, 250, 600, 400), 15.0f, 15.0f), pDefaultBrush2);
-				//D2D_EndDraw();
+				D2D_BeginDraw();
+				pD2DDeviceContext->FillRoundedRectangle(D2D1::RoundedRect(D2D1::RectF(250, 250, 600, 400), 15.0f, 15.0f), pDefaultBrush2.Get());
+				D2D_EndDraw();
 
 				pD3DDeviceContext->ClearDepthStencilView(pDepthStencilView.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
 
@@ -489,32 +492,38 @@ void DxwWindow::InitDirect2D()
 	LOG_DEBUG("Direct2D initialization started");
 
 	LOG_DEBUG("Creating D2D1Factory");
-	HRESULT hr = D2D1CreateFactory(D2D1_FACTORY_TYPE_MULTI_THREADED, __uuidof(ID2D1Factory1), nullptr, (void**)pD2DFactory.GetAddressOf());
-	if (FAILED(hr))
+	if (pD2DFactory == nullptr)
 	{
-		LOG_ERROR("Failed to create Direct2D factory.");
-		return;
+		HRESULT hr = D2D1CreateFactory(D2D1_FACTORY_TYPE_MULTI_THREADED, __uuidof(ID2D1Factory1), nullptr, (void**)pD2DFactory.GetAddressOf());
+		if (FAILED(hr))
+		{
+			LOG_ERROR("Failed to create Direct2D factory.");
+			return;
+		}
 	}
 
-	LOG_DEBUG("Creating IDXGIDevice from D3D device");
-	IDXGIDevice* pDXGIDevice{ nullptr };
-	hr = pD3DDevice->QueryInterface(__uuidof(IDXGIDevice), (void**)&pDXGIDevice);
-	if (FAILED(hr))
+	if (pD2DDevice == nullptr)
 	{
-		LOG_ERROR("Failed to get IDXGIDevice from D3D device.");
-		return;
-	}
+		LOG_DEBUG("Creating IDXGIDevice from D3D device");
+		ComPtr<IDXGIDevice> pDXGIDevice{ nullptr };
+		HRESULT hr = pD3DDevice->QueryInterface(__uuidof(IDXGIDevice), (void**)pDXGIDevice.GetAddressOf());
+		if (FAILED(hr))
+		{
+			LOG_ERROR("Failed to get IDXGIDevice from D3D device.");
+			return;
+		}
 
-	LOG_DEBUG("Creating Direct2D Device");
-	hr = pD2DFactory->CreateDevice(pDXGIDevice, pD2DDevice.ReleaseAndGetAddressOf());
-	if (FAILED(hr) || pD2DDevice == nullptr)
-	{
-		LOG_ERROR("Failed to create Direct2D device.");
-		return;
+		LOG_DEBUG("Creating Direct2D Device");
+		hr = pD2DFactory->CreateDevice(pDXGIDevice.Get(), pD2DDevice.GetAddressOf());
+		if (FAILED(hr) || pD2DDevice == nullptr)
+		{
+			LOG_ERROR("Failed to create Direct2D device.");
+			return;
+		}
 	}
 
 	LOG_DEBUG("Creating Direct2D device context");
-	hr = pD2DDevice->CreateDeviceContext(D2D1_DEVICE_CONTEXT_OPTIONS_ENABLE_MULTITHREADED_OPTIMIZATIONS, pD2DDeviceContext.ReleaseAndGetAddressOf());
+	HRESULT hr = pD2DDevice->CreateDeviceContext(D2D1_DEVICE_CONTEXT_OPTIONS_ENABLE_MULTITHREADED_OPTIMIZATIONS, pD2DDeviceContext.GetAddressOf());
 	if (FAILED(hr) || pD2DDeviceContext == nullptr)
 	{
 		LOG_ERROR("Failed to create Direct2D device context.");
@@ -525,12 +534,12 @@ void DxwWindow::InitDirect2D()
 	LOG_DEBUG("Creating bitmap from DxgiSurface");
 
 	ComPtr<ID3D11Texture2D> pBackBufferTexture{ nullptr };
-	IDXGISurface* pSurface{ nullptr };
+	ComPtr<IDXGISurface> pSurface{ nullptr };
 
 	hr = pSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)pBackBufferTexture.GetAddressOf());
 	if (SUCCEEDED(hr))
 	{
-		hr = pBackBufferTexture->QueryInterface(__uuidof(IDXGISurface), (void**)&pSurface);
+		hr = pBackBufferTexture->QueryInterface(__uuidof(IDXGISurface), (void**)pSurface.GetAddressOf());
 		if (SUCCEEDED(hr))
 		{
 			auto props = D2D1::BitmapProperties1(
@@ -539,7 +548,7 @@ void DxwWindow::InitDirect2D()
 					DXGI_FORMAT_R8G8B8A8_UNORM, D2D1_ALPHA_MODE_PREMULTIPLIED));
 
 			hr = pD2DDeviceContext->CreateBitmapFromDxgiSurface(
-				pSurface,
+				pSurface.Get(),
 				props,
 				pD2DBitmap.GetAddressOf()
 			);
@@ -594,18 +603,18 @@ void DxwWindow::InitDirectX(HWND hWnd)
 {
 	LOG_DEBUG("DirectX initialization started");
 	InitDirect3D(hWnd);
-	//InitDirect2D();
+	InitDirect2D();
 	//CreateTextResources();
 	isDirectXInitialized = true;
 	LOG_INFO("DirectX initialization complete");
 
-#if defined(DEBUG) || defined(_DEBUG)
-	ComPtr<ID3D11Debug> pDebugDevice;
-	if (SUCCEEDED(pD3DDevice->QueryInterface(pDebugDevice.GetAddressOf())))
-	{
-		pDebugDevice->ReportLiveDeviceObjects(D3D11_RLDO_DETAIL);
-	}
-#endif
+//#if defined(DEBUG) || defined(_DEBUG)
+//	ComPtr<ID3D11Debug> pDebugDevice;
+//	if (SUCCEEDED(pD3DDevice->QueryInterface(pDebugDevice.GetAddressOf())))
+//	{
+//		pDebugDevice->ReportLiveDeviceObjects(D3D11_RLDO_DETAIL);
+//	}
+//#endif
 }
 
 }
