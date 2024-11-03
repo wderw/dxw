@@ -109,10 +109,22 @@ DirectX::XMMATRIX DxwWindow::RecalculateTransformMatrix()
     return DirectX::XMMatrixMultiply(matrix, translationMatrix);
 }
 
-void DxwWindow::SetWindowSize(int w, int h)
+void DxwWindow::SetWindowSize(int width, int height)
 {
-	windowWidth = w;
-	windowHeight = h;
+	windowWidth = width;
+	windowHeight = height;
+}
+
+void DxwWindow::UpdateViewport(int width, int height)
+{
+	D3D11_VIEWPORT viewport;
+	viewport.Width = width;
+	viewport.Height = height;
+	viewport.MinDepth = 0.0f;
+	viewport.MaxDepth = 1.0f;
+	viewport.TopLeftX = 0.0f;
+	viewport.TopLeftY = 0.0f;
+	pD3DDeviceContext->RSSetViewports(1, &viewport);
 }
 
 void DxwWindow::RunThreadedTest()
@@ -219,6 +231,11 @@ void DxwWindow::RunThreadedTest()
 		}).detach();
 }
 
+void DxwWindow::ResizeWindow(int w, int h)
+{
+	SetWindowSize(w, h);
+}
+
 void DxwWindow::InitDirect3D(HWND hWnd)
 {
 	LOG_DEBUG("Direct3D initialization started");
@@ -279,14 +296,7 @@ void DxwWindow::InitDirect3D(HWND hWnd)
 	pD3DDeviceContext->OMSetRenderTargets(1, pRenderTargetView.GetAddressOf(), nullptr);
 
 	LOG_DEBUG("Creating D3D11 Viewport");
-	D3D11_VIEWPORT viewport;
-	viewport.Width = windowWidth;
-	viewport.Height = windowHeight;
-	viewport.MinDepth = 0.0f;
-	viewport.MaxDepth = 1.0f;
-	viewport.TopLeftX = 0.0f;
-	viewport.TopLeftY = 0.0f;
-	pD3DDeviceContext->RSSetViewports(1, &viewport);
+	UpdateViewport(windowWidth, windowHeight);
 
 	// Create the depth buffer description
 	D3D11_TEXTURE2D_DESC depthStencilDesc = {};

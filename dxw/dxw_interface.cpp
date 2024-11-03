@@ -21,6 +21,12 @@ int DXW_InitWindow(HWND hWnd)
 	return id;
 }
 
+void DXW_ResizeWindow(int width, int height)
+{
+	LOG_TRACE("DXW_ResizeWindow called");
+	DxwSharedContext::GetInstance().GetCurrentWindow()->ResizeWindow(width, height);
+}
+
 void DXW_SetTargetWindow(int newId)
 {
 	LOG_TRACE("DXW_SetTargetWindow called");

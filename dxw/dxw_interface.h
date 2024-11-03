@@ -6,6 +6,7 @@ namespace dxw
 {
 
 extern "C" __declspec(dllexport) int  DXW_InitWindow(HWND hWnd);
+extern "C" __declspec(dllexport) void DXW_ResizeWindow(int, int);
 extern "C" __declspec(dllexport) void DXW_SetTargetWindow(int);
 extern "C" __declspec(dllexport) void DXW_RunThreadedTest();
 extern "C" __declspec(dllexport) void DXW_D3D_Clear();

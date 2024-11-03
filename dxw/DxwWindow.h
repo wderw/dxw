@@ -51,6 +51,8 @@ public:
 	void D2D_EndDraw();
 	void DX_Present(int);
 	void RunThreadedTest();
+	void ResizeWindow(int, int);
+
 
 	bool operator==(const DxwWindow& other) const
 	{
@@ -65,6 +67,7 @@ private:
 	int windowHeight{ 0 };
 
 	void SetWindowSize(int, int);
+	void UpdateViewport(int, int);
 
 	DirectX::XMMATRIX scalingMatrix{ DirectX::XMMatrixIdentity() };
 	DirectX::XMMATRIX rotationMatrix{ DirectX::XMMatrixIdentity() };
