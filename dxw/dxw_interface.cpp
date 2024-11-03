@@ -60,7 +60,7 @@ bool DXW_IsInitialized()
 		return DxwSharedContext::GetInstance().GetCurrentWindow()->IsInitialized();
 	}
 
-	LOG_WARN("No windows available in SharedContext!");
+	LOG_WARN("Current window id not registered in SharedContext!");
 	return false;
 }
 
