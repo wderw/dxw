@@ -52,7 +52,7 @@ public:
 	void D2D_EndDraw();
 	void DX_Present(int);
 	void RunThreadedTest();
-	void NRTDemo();
+	void DemoNRT();
 	void ResizeWindow(unsigned int, unsigned int);
 
 	bool operator==(const DxwWindow& other) const
@@ -96,6 +96,7 @@ private:
 	ComPtr<ID3D11Texture2D> pDepthStencilBuffer{ nullptr };
 	ComPtr<ID3D11DepthStencilView> pDepthStencilView{ nullptr };
 	ComPtr<ID3D11Buffer> transformBuffer{ nullptr };
+	ComPtr<IDXGISurface> pSurface{ nullptr };
 
 	TransformBuffer transformBufferData{ DirectX::XMMatrixIdentity(), DirectX::XMMatrixIdentity() };
 };

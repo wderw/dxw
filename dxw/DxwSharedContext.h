@@ -16,6 +16,11 @@ public:
         return instance;
     }
 
+    void ReleaseDxwWindows()
+    {
+        windows.clear();
+    }
+
     void RegisterWindow(std::shared_ptr<DxwWindow> window)
     {
         int id = window->GetId();

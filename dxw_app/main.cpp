@@ -19,18 +19,21 @@ typedef bool(__stdcall* DXW_IsInitializedFunc)();
 typedef void(__stdcall* DXW_RunThreadedTestFunc)();
 typedef void(__stdcall* DXW_DemoNRTFunc)();
 typedef void(__stdcall* DXW_ResizeWindowFunc)(unsigned int, unsigned int);
+typedef void(__stdcall* DXW_ReleaseDxwWindowsFunc)();
 
-DXW_SetTargetWindowFunc DXW_SetTargetWindow = nullptr;
-DXW_InitWindowFunc      DXW_InitWindow      = nullptr;
-DXW_D3D_ClearFunc       DXW_D3D_Clear       = nullptr;
-DXW_D2D_BeginDrawFunc   DXW_D2D_BeginDraw   = nullptr;
-DXW_D2D_EndDrawFunc     DXW_D2D_EndDraw     = nullptr;
-DXW_D2D_ClearFunc       DXW_D2D_Clear       = nullptr;
-DXW_PresentFunc         DXW_Present         = nullptr;
-DXW_IsInitializedFunc   DXW_IsInitialized   = nullptr;
-DXW_RunThreadedTestFunc DXW_RunThreadedTest = nullptr;
-DXW_DemoNRTFunc         DXW_DemoNRT         = nullptr;
-DXW_ResizeWindowFunc    DXW_ResizeWindow    = nullptr;
+
+DXW_SetTargetWindowFunc         DXW_SetTargetWindow         = nullptr;
+DXW_InitWindowFunc              DXW_InitWindow              = nullptr;
+DXW_D3D_ClearFunc               DXW_D3D_Clear               = nullptr;
+DXW_D2D_BeginDrawFunc           DXW_D2D_BeginDraw           = nullptr;
+DXW_D2D_EndDrawFunc             DXW_D2D_EndDraw             = nullptr;
+DXW_D2D_ClearFunc               DXW_D2D_Clear               = nullptr;
+DXW_PresentFunc                 DXW_Present                 = nullptr;
+DXW_IsInitializedFunc           DXW_IsInitialized           = nullptr;
+DXW_RunThreadedTestFunc         DXW_RunThreadedTest         = nullptr;
+DXW_DemoNRTFunc                 DXW_DemoNRT                 = nullptr;
+DXW_ResizeWindowFunc            DXW_ResizeWindow            = nullptr;
+DXW_ReleaseDxwWindowsFunc       DXW_ReleaseDxwWindows       = nullptr;
 
 
 const std::wstring libraryName = L"dxw.dll";
@@ -163,6 +166,15 @@ bool LoadWrapperDll()
             _stprintf_s(errorMsg, _T("DXW_DemoNRT GetProcAddress failed. Error code: %lu"), error);
             MessageBox(nullptr, errorMsg, _T("Error"), MB_OK);
         }
+
+        DXW_ReleaseDxwWindows = (DXW_ReleaseDxwWindowsFunc)GetProcAddress(hDLL, "DXW_ReleaseDxwWindows");
+        if (!DXW_ReleaseDxwWindows)
+        {
+            DWORD error = GetLastError();
+            TCHAR errorMsg[256];
+            _stprintf_s(errorMsg, _T("DXW_ReleaseDxwWindows GetProcAddress failed. Error code: %lu"), error);
+            MessageBox(nullptr, errorMsg, _T("Error"), MB_OK);
+        }
     }
 
     std::cout << "Wrapper loaded successfully!" << std::endl;
@@ -212,6 +224,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         return 0;
     }
     case WM_DESTROY:
+        DXW_ReleaseDxwWindows();
         PostQuitMessage(0);
         return 0;
     default:

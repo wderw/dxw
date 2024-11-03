@@ -141,6 +141,7 @@ void DxwWindow::ResizeD3DSwapChain(UINT width, UINT height)
 
 	pD2DBitmap.Reset();
 	pD2DDeviceContext.Reset();
+	pSurface.Reset();
 
 	// RenderTargetView and backBuffer must be released
 	// before attempting to resize the swap chain buffer!
@@ -213,7 +214,7 @@ void DxwWindow::ResizeD3DSwapChain(UINT width, UINT height)
 	LOG_INFO("Swap chain size reconfiguration complete");
 }
 
-void DxwWindow::NRTDemo()
+void DxwWindow::DemoNRT()
 {
 	float fi = 0;
 
@@ -637,25 +638,34 @@ void DxwWindow::InitDirect2D()
 	LOG_DEBUG("Creating bitmap from DxgiSurface");
 
 	ComPtr<ID3D11Texture2D> pBackBufferTexture{ nullptr };
-	ComPtr<IDXGISurface> pSurface{ nullptr };
 
 	hr = pSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)pBackBufferTexture.GetAddressOf());
-	if (SUCCEEDED(hr))
+	if (FAILED(hr))
 	{
-		hr = pBackBufferTexture->QueryInterface(__uuidof(IDXGISurface), (void**)pSurface.GetAddressOf());
-		if (SUCCEEDED(hr))
-		{
-			auto props = D2D1::BitmapProperties1(
-				D2D1_BITMAP_OPTIONS_TARGET | D2D1_BITMAP_OPTIONS_CANNOT_DRAW,
-				D2D1::PixelFormat(
-					DXGI_FORMAT_R8G8B8A8_UNORM, D2D1_ALPHA_MODE_PREMULTIPLIED));
+		LOG_ERROR("Failed to get back buffer!");
+		return;
+	}
 
-			hr = pD2DDeviceContext->CreateBitmapFromDxgiSurface(
-				pSurface.Get(),
-				props,
-				pD2DBitmap.GetAddressOf()
-			);
-		}
+	hr = pBackBufferTexture->QueryInterface(__uuidof(IDXGISurface), (void**)pSurface.GetAddressOf());
+	if (FAILED(hr))
+	{
+		LOG_ERROR("Query interface for DXGISurface failed!");
+		return;
+	}
+
+	auto props = D2D1::BitmapProperties1(
+		D2D1_BITMAP_OPTIONS_TARGET | D2D1_BITMAP_OPTIONS_CANNOT_DRAW,
+		D2D1::PixelFormat(
+			DXGI_FORMAT_R8G8B8A8_UNORM, D2D1_ALPHA_MODE_PREMULTIPLIED));
+	hr = pD2DDeviceContext->CreateBitmapFromDxgiSurface(
+		pSurface.Get(),
+		props,
+		pD2DBitmap.GetAddressOf()
+	);
+	if (FAILED(hr))
+	{
+		LOG_ERROR("CreateBitmapFromDxgiSurface failed!");
+		return;
 	}
 
 	if (pD2DBitmap)
@@ -709,6 +719,7 @@ void DxwWindow::InitDirectX(HWND hWnd)
 	InitDirect2D();
 	//CreateTextResources();
 	isDirectXInitialized = true;
+	//DemoNRT(); THIS SOMEHOW FIXES THE STALL ON EXIT XD
 	LOG_INFO("DirectX initialization complete");
 
 //#if defined(DEBUG) || defined(_DEBUG)

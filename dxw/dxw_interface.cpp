@@ -43,7 +43,7 @@ void DXW_RunThreadedTest()
 void DXW_DemoNRT()
 {
 	LOG_TRACE("DXW_NRTDemo called");
-	DxwSharedContext::GetInstance().GetCurrentWindow()->NRTDemo();
+	DxwSharedContext::GetInstance().GetCurrentWindow()->DemoNRT();
 }
 
 void DXW_Present(int vsync = 1)
@@ -62,6 +62,12 @@ bool DXW_IsInitialized()
 
 	LOG_WARN("Current window id not registered in SharedContext!");
 	return false;
+}
+
+void DXW_ReleaseDxwWindows()
+{
+	LOG_TRACE("DXW_ReleaseDxwWindows called");
+	DxwSharedContext::GetInstance().ReleaseDxwWindows();
 }
 
 void DXW_D3D_Clear()
