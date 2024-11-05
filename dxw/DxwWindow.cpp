@@ -82,7 +82,7 @@ void DxwWindow::D3D_UpdateMatrixSubresources()
 {
 	transformBufferData.transform = DirectX::XMMatrixTranspose(transformMatrix); // transpose needed for HLSL
 	transformBufferData.projection = DirectX::XMMatrixTranspose(projectionMatrix);
-	pD3DDeviceContext->UpdateSubresource(transformBuffer.Get(), 0, nullptr, &transformBufferData, 0, 0);
+	pD3DDeviceContext->UpdateSubresource(pTransformBuffer.Get(), 0, nullptr, &transformBufferData, 0, 0);
 }
 
 void DxwWindow::D3D_SetTopology(D3D11_PRIMITIVE_TOPOLOGY primitiveTopology)
@@ -232,64 +232,43 @@ void DxwWindow::DemoNRT()
 {
 	float fi = 0;
 
-	std::vector<Vertex> tetrahedronVerts = Utils::GenerateTetrahedron();
-
-	D3D11_BUFFER_DESC bufferDesc = {};
-	bufferDesc.Usage = D3D11_USAGE_DEFAULT;
-	bufferDesc.ByteWidth = sizeof(Vertex) * static_cast<UINT>(tetrahedronVerts.size());
-	bufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-	bufferDesc.CPUAccessFlags = 0;
-
-	D3D11_SUBRESOURCE_DATA initData = {};
-	initData.pSysMem = tetrahedronVerts.data();
-
-	if (pVertexBuffer == nullptr)
-	{
-		HRESULT hr = pD3DDevice->CreateBuffer(&bufferDesc, &initData, pVertexBuffer.GetAddressOf());
-		if (FAILED(hr))
-		{
-			LOG_ERROR("Failed to create vertex buffer!");
-			return;
-		}
-	}
-
-	UINT stride = sizeof(Vertex);
-	UINT offset = 0;
-	pD3DDeviceContext->IASetInputLayout(pInputLayout.Get());
-	pD3DDeviceContext->IASetVertexBuffers(0, 1, pVertexBuffer.GetAddressOf(), &stride, &offset);
-
-	pD3DDeviceContext->VSSetShader(pVertexShader.Get(), nullptr, 0);
-	pD3DDeviceContext->PSSetShader(pPixelShader.Get(), nullptr, 0);
-
-	ZeroMemory(&bufferDesc, sizeof(D3D11_BUFFER_DESC));
-	bufferDesc.Usage = D3D11_USAGE_DEFAULT;
-	bufferDesc.ByteWidth = sizeof(TransformBuffer);
-	bufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	bufferDesc.CPUAccessFlags = 0;
-
-	if (transformBuffer == nullptr)
-	{
-		pD3DDevice->CreateBuffer(&bufferDesc, nullptr, transformBuffer.GetAddressOf());
-	}
-	pD3DDeviceContext->VSSetConstantBuffers(0, 1, transformBuffer.GetAddressOf());
-	D3D_UpdateMatrixSubresources();
+	//wchar_t fpsText[80] = L"TEST test za¿ó³æ gêœl¹ jaŸñ The quick brown fox jumps over the lazy dog";
+	//D2D1_RECT_F textRect = D2D1::RectF(0, 0, 250, 50);
 
 	//pD2DDeviceContext->CreateSolidColorBrush(
 	//	D2D1::ColorF(D2D1::ColorF(0, 1, 0, 1.0f)),
 	//	pDefaultBrush.GetAddressOf()
 	//);
 
-	//pD2DDeviceContext->CreateSolidColorBrush(
-	//	D2D1::ColorF(D2D1::ColorF(1, 1, 1, 0.3f)),
-	//	pDefaultBrush2.GetAddressOf()
-	//);
+	pD2DDeviceContext->CreateSolidColorBrush(
+		D2D1::ColorF(D2D1::ColorF(1, 1, 1, 0.3f)),
+		pDefaultBrush2.GetAddressOf()
+	);
+
+	std::vector<Vertex> lineVerts = Utils::GenerateLines(windowWidth, windowHeight);
+	std::vector<Vertex> tetrahedronVerts = Utils::GenerateTetrahedron();
+
+	D3D11_BUFFER_DESC vertexBufferDesc = Utils::VertexBufferDesc(tetrahedronVerts);
+	D3D11_SUBRESOURCE_DATA initData = { tetrahedronVerts.data() };
+
+	if (pVertexBuffer == nullptr)
+	{
+		pD3DDevice->CreateBuffer(&vertexBufferDesc, &initData, pVertexBuffer.GetAddressOf());
+	}
+
+	UINT stride = sizeof(Vertex);
+	UINT offset = 0;
+	pD3DDeviceContext->IASetInputLayout(pInputLayout.Get());
+	pD3DDeviceContext->IASetVertexBuffers(0, 1, pVertexBuffer.GetAddressOf(), &stride, &offset);
+	pD3DDeviceContext->VSSetShader(pVertexShader.Get(), nullptr, 0);
+	pD3DDeviceContext->PSSetShader(pPixelShader.Get(), nullptr, 0);
 
 	fi += 1.0f;
 	D3D_Clear();
 
-	//D2D_BeginDraw();
-	//pD2DDeviceContext->FillRoundedRectangle(D2D1::RoundedRect(D2D1::RectF(250, 250, 600, 400), 15.0f, 15.0f), pDefaultBrush2.Get());
-	//D2D_EndDraw();
+	D2D_BeginDraw();
+	pD2DDeviceContext->FillRoundedRectangle(D2D1::RoundedRect(D2D1::RectF(250, 250, 600, 400), 15.0f, 15.0f), pDefaultBrush2.Get());
+	D2D_EndDraw();
 
 	pD3DDeviceContext->ClearDepthStencilView(pDepthStencilView.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
 
@@ -312,25 +291,14 @@ void DxwWindow::DemoNRT()
 	D3D_Draw(12, 0);
 
 	//D2D_BeginDraw();
-
-	//wchar_t fpsText[80] = L"TEST test za¿ó³æ gêœl¹ jaŸñ The quick brown fox jumps over the lazy dog";
-	//D2D1_RECT_F textRect = D2D1::RectF(0, 0, 250, 50);
-
-	//pD2DDeviceContext->DrawTextW(
-	//	fpsText,
-	//	wcslen(fpsText),
-	//	pDefaultTextFormat.Get(),
-	//	textRect,
-	//	pDefaultBrush.Get()
-	//);
-	//pD2DDeviceContext->FillRoundedRectangle(D2D1::RoundedRect(D2D1::RectF(80, 80, 400, 500), 15.0f, 15.0f), pDefaultBrush2.Get());
-
+	//pD2DDeviceContext->DrawTextW(fpsText, wcslen(fpsText), pDefaultTextFormat, textRect, pDefaultBrush);
+	//pD2DDeviceContext->FillRoundedRectangle(D2D1::RoundedRect(D2D1::RectF(80, 80, 400, 500), 15.0f, 15.0f), pDefaultBrush2);
 	//D2D_EndDraw();
 
 	DX_Present(1);
 }
 
-void DxwWindow::RunThreadedTest()
+void DxwWindow::DemoRT()
 {
 	std::thread([&]()
 		{
@@ -353,8 +321,7 @@ void DxwWindow::RunThreadedTest()
 			std::vector<Vertex> tetrahedronVerts = Utils::GenerateTetrahedron();
 
 			D3D11_BUFFER_DESC vertexBufferDesc = Utils::VertexBufferDesc(tetrahedronVerts);
-			D3D11_SUBRESOURCE_DATA initData = {};
-			initData.pSysMem = tetrahedronVerts.data();
+			D3D11_SUBRESOURCE_DATA initData = { tetrahedronVerts.data() };
 
             pD3DDevice->CreateBuffer(&vertexBufferDesc, &initData, pVertexBuffer.GetAddressOf());
 
@@ -364,14 +331,6 @@ void DxwWindow::RunThreadedTest()
 			pD3DDeviceContext->IASetVertexBuffers(0, 1, pVertexBuffer.GetAddressOf(), &stride, &offset);
 			pD3DDeviceContext->VSSetShader(pVertexShader.Get(), nullptr, 0);
 			pD3DDeviceContext->PSSetShader(pPixelShader.Get(), nullptr, 0);
-
-			D3D11_BUFFER_DESC transformBufferDesc = Utils::TransformBufferDesc();
-
-			if (transformBuffer == nullptr)
-			{
-				pD3DDevice->CreateBuffer(&transformBufferDesc, nullptr, transformBuffer.GetAddressOf());
-			}
-			pD3DDeviceContext->VSSetConstantBuffers(0, 1, transformBuffer.GetAddressOf());
 
 			while (true)
 			{
@@ -706,6 +665,13 @@ bool DxwWindow::IsInitialized() const
 	return isDirectXInitialized;
 }
 
+void DxwWindow::PrepareConstantTransformBuffer()
+{
+	transformBufferDesc = Utils::TransformBufferDesc();
+	pD3DDevice->CreateBuffer(&transformBufferDesc, nullptr, pTransformBuffer.GetAddressOf());
+	pD3DDeviceContext->VSSetConstantBuffers(0, 1, pTransformBuffer.GetAddressOf());
+}
+
 void DxwWindow::InitDirectX(HWND hWnd)
 {
 	LOG_DEBUG("DirectX initialization started");
@@ -713,7 +679,8 @@ void DxwWindow::InitDirectX(HWND hWnd)
 	InitDirect2D();
 	//CreateTextResources();
 	isDirectXInitialized = true;
-	//DemoNRT(); THIS SOMEHOW FIXES THE STALL ON EXIT XD
+
+	PrepareConstantTransformBuffer();
 	LOG_INFO("DirectX initialization complete");
 
 //#if defined(DEBUG) || defined(_DEBUG)

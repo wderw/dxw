@@ -52,7 +52,7 @@ public:
 	void D2D_BeginDraw();
 	void D2D_EndDraw();
 	void DX_Present(int);
-	void RunThreadedTest();
+	void DemoRT();
 	void DemoNRT();
 	void ResizeWindow(unsigned int, unsigned int);
 
@@ -65,6 +65,7 @@ private:
 	void SetWindowSize(int, int);
 	void SetD3DViewport(int, int);
 	void ResizeD3DSwapChain(UINT, UINT);
+	void PrepareConstantTransformBuffer();
 
 	int id{-1};
 	static int instanceCounter;
@@ -96,10 +97,11 @@ private:
 	ComPtr<ID3D11PixelShader> pPixelShader{ nullptr };
 	ComPtr<ID3D11Texture2D> pDepthStencilBuffer{ nullptr };
 	ComPtr<ID3D11DepthStencilView> pDepthStencilView{ nullptr };
-	ComPtr<ID3D11Buffer> transformBuffer{ nullptr };
+	ComPtr<ID3D11Buffer> pTransformBuffer{ nullptr };
 	ComPtr<IDXGISurface> pSurface{ nullptr };
 
 	TransformBuffer transformBufferData{ DirectX::XMMatrixIdentity(), DirectX::XMMatrixIdentity() };
+	D3D11_BUFFER_DESC transformBufferDesc;
 };
 
 }

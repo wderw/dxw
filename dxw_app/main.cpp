@@ -16,7 +16,7 @@ typedef void(__stdcall* DXW_D2D_EndDrawFunc)();
 typedef void(__stdcall* DXW_D2D_ClearFunc)();
 typedef void(__stdcall* DXW_PresentFunc)(int);
 typedef bool(__stdcall* DXW_IsInitializedFunc)();
-typedef void(__stdcall* DXW_RunThreadedTestFunc)();
+typedef void(__stdcall* DXW_DemoRTFunc)();
 typedef void(__stdcall* DXW_DemoNRTFunc)();
 typedef void(__stdcall* DXW_ResizeWindowFunc)(unsigned int, unsigned int);
 typedef void(__stdcall* DXW_ReleaseDxwWindowsFunc)();
@@ -29,7 +29,7 @@ DXW_D2D_EndDrawFunc             DXW_D2D_EndDraw             = nullptr;
 DXW_D2D_ClearFunc               DXW_D2D_Clear               = nullptr;
 DXW_PresentFunc                 DXW_Present                 = nullptr;
 DXW_IsInitializedFunc           DXW_IsInitialized           = nullptr;
-DXW_RunThreadedTestFunc         DXW_RunThreadedTest         = nullptr;
+DXW_DemoRTFunc                  DXW_DemoRT                  = nullptr;
 DXW_DemoNRTFunc                 DXW_DemoNRT                 = nullptr;
 DXW_ResizeWindowFunc            DXW_ResizeWindow            = nullptr;
 DXW_ReleaseDxwWindowsFunc       DXW_ReleaseDxwWindows       = nullptr;
@@ -138,12 +138,12 @@ bool LoadWrapperDll()
             MessageBox(nullptr, errorMsg, _T("Error"), MB_OK);
         }
 
-        DXW_RunThreadedTest = (DXW_RunThreadedTestFunc)GetProcAddress(hDLL, "DXW_RunThreadedTest");
-        if (!DXW_RunThreadedTest)
+        DXW_DemoRT = (DXW_DemoRTFunc)GetProcAddress(hDLL, "DXW_DemoRT");
+        if (!DXW_DemoRT)
         {
             DWORD error = GetLastError();
             TCHAR errorMsg[256];
-            _stprintf_s(errorMsg, _T("DXW_RunThreadedTest GetProcAddress failed. Error code: %lu"), error);
+            _stprintf_s(errorMsg, _T("DXW_DemoRT GetProcAddress failed. Error code: %lu"), error);
             MessageBox(nullptr, errorMsg, _T("Error"), MB_OK);
         }
 
@@ -265,7 +265,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     std::cout << "Window allocated id was: " << id << std::endl;
 
     DXW_SetTargetWindow(id); // redundant but fine - target window is always the last added window
-    DXW_RunThreadedTest();
+    DXW_DemoRT();
     //DXW_DemoNRT();
 
     MSG msg = {};

@@ -74,7 +74,7 @@ std::vector<Vertex> Utils::GenerateLines(int width, int height)
 void Utils::HandleHResultError(HRESULT hr)
 {
 	std::stringstream ss;
-	ss << "Error resizing swap chain (HRESULT: 0x" << std::hex << hr << ")";
+	ss << "HRESULT Error: (HRESULT: 0x" << std::hex << hr << ")";
 	LOG_ERROR("{}", ss.str().c_str());
 }
 
