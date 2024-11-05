@@ -78,4 +78,24 @@ void Utils::HandleHResultError(HRESULT hr)
 	LOG_ERROR("{}", ss.str().c_str());
 }
 
+D3D11_BUFFER_DESC Utils::VertexBufferDesc(const std::vector<Vertex>& vertices)
+{
+	D3D11_BUFFER_DESC bufferDesc{};
+	bufferDesc.Usage = D3D11_USAGE_DEFAULT;
+	bufferDesc.ByteWidth = sizeof(Vertex) * static_cast<UINT>(vertices.size());
+	bufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+	bufferDesc.CPUAccessFlags = 0;
+	return bufferDesc;
+}
+
+D3D11_BUFFER_DESC Utils::TransformBufferDesc()
+{
+	D3D11_BUFFER_DESC bufferDesc{};
+	bufferDesc.Usage = D3D11_USAGE_DEFAULT;
+	bufferDesc.ByteWidth = sizeof(TransformBuffer);
+	bufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	bufferDesc.CPUAccessFlags = 0;
+	return bufferDesc;
+}
+
 }

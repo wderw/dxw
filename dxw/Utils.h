@@ -2,9 +2,11 @@
 
 #include <vector>
 #include <sstream>
+#include <d3d11.h>
 
 #include "Log.h"
 #include "Vertex.h"
+#include "TransformBuffer.h"
 
 namespace dxw
 {
@@ -19,5 +21,7 @@ public:
 	static std::vector<Vertex> GenerateTetrahedron();
 	static std::vector<Vertex> GenerateLines(int width, int height);
 	static void HandleHResultError(HRESULT hr);
+	static D3D11_BUFFER_DESC VertexBufferDesc(const std::vector<Vertex>&);
+	static D3D11_BUFFER_DESC TransformBufferDesc();
 };
 }
