@@ -25,6 +25,7 @@ class DxwWindow
 {
 public:
 	DxwWindow();
+	~DxwWindow();
 
 	void InitDirectX(HWND);
 	void InitDirect3D(HWND);

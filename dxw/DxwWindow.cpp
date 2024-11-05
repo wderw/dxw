@@ -12,6 +12,20 @@ namespace dxw
 
 int DxwWindow::instanceCounter = 0;
 
+DxwWindow::~DxwWindow()
+{
+	OutputDebugStringA("******************************** ~DxwWindow() called *******************************\n");
+
+#if defined(DEBUG) || defined(_DEBUG)
+	ComPtr<ID3D11Debug> pDebugDevice;
+	if (SUCCEEDED(pD3DDevice->QueryInterface(pDebugDevice.GetAddressOf())))
+	{
+		//pDebugDevice->ReportLiveDeviceObjects(D3D11_RLDO_DETAIL);
+		pDebugDevice->ReportLiveDeviceObjects(D3D11_RLDO_SUMMARY);
+	}
+#endif
+}
+
 DxwWindow::DxwWindow()
 {
 	id = instanceCounter++;
@@ -218,7 +232,6 @@ void DxwWindow::DemoNRT()
 {
 	float fi = 0;
 
-	std::vector<Vertex> lineVerts = Utils::GenerateLines(windowWidth, windowHeight);
 	std::vector<Vertex> tetrahedronVerts = Utils::GenerateTetrahedron();
 
 	D3D11_BUFFER_DESC bufferDesc = {};
@@ -230,12 +243,14 @@ void DxwWindow::DemoNRT()
 	D3D11_SUBRESOURCE_DATA initData = {};
 	initData.pSysMem = tetrahedronVerts.data();
 
-	LOG_DEBUG("Creating vertex buffer");
-	HRESULT hr = pD3DDevice->CreateBuffer(&bufferDesc, &initData, pVertexBuffer.GetAddressOf());
-	if (FAILED(hr))
+	if (pVertexBuffer == nullptr)
 	{
-		LOG_ERROR("Failed to create vertex buffer!");
-		return;
+		HRESULT hr = pD3DDevice->CreateBuffer(&bufferDesc, &initData, pVertexBuffer.GetAddressOf());
+		if (FAILED(hr))
+		{
+			LOG_ERROR("Failed to create vertex buffer!");
+			return;
+		}
 	}
 
 	UINT stride = sizeof(Vertex);
@@ -252,26 +267,29 @@ void DxwWindow::DemoNRT()
 	bufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 	bufferDesc.CPUAccessFlags = 0;
 
-	pD3DDevice->CreateBuffer(&bufferDesc, nullptr, transformBuffer.GetAddressOf());
+	if (transformBuffer == nullptr)
+	{
+		pD3DDevice->CreateBuffer(&bufferDesc, nullptr, transformBuffer.GetAddressOf());
+	}
 	pD3DDeviceContext->VSSetConstantBuffers(0, 1, transformBuffer.GetAddressOf());
 	D3D_UpdateMatrixSubresources();
 
-	pD2DDeviceContext->CreateSolidColorBrush(
-		D2D1::ColorF(D2D1::ColorF(0, 1, 0, 1.0f)),
-		pDefaultBrush.GetAddressOf()
-	);
+	//pD2DDeviceContext->CreateSolidColorBrush(
+	//	D2D1::ColorF(D2D1::ColorF(0, 1, 0, 1.0f)),
+	//	pDefaultBrush.GetAddressOf()
+	//);
 
-	pD2DDeviceContext->CreateSolidColorBrush(
-		D2D1::ColorF(D2D1::ColorF(1, 1, 1, 0.3f)),
-		pDefaultBrush2.GetAddressOf()
-	);
+	//pD2DDeviceContext->CreateSolidColorBrush(
+	//	D2D1::ColorF(D2D1::ColorF(1, 1, 1, 0.3f)),
+	//	pDefaultBrush2.GetAddressOf()
+	//);
 
 	fi += 1.0f;
 	D3D_Clear();
 
-	D2D_BeginDraw();
-	pD2DDeviceContext->FillRoundedRectangle(D2D1::RoundedRect(D2D1::RectF(250, 250, 600, 400), 15.0f, 15.0f), pDefaultBrush2.Get());
-	D2D_EndDraw();
+	//D2D_BeginDraw();
+	//pD2DDeviceContext->FillRoundedRectangle(D2D1::RoundedRect(D2D1::RectF(250, 250, 600, 400), 15.0f, 15.0f), pDefaultBrush2.Get());
+	//D2D_EndDraw();
 
 	pD3DDeviceContext->ClearDepthStencilView(pDepthStencilView.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
 
@@ -332,12 +350,15 @@ void DxwWindow::RunThreadedTest()
 			D3D11_SUBRESOURCE_DATA initData = {};
 			initData.pSysMem = tetrahedronVerts.data();
 
-			LOG_DEBUG("Creating vertex buffer");
-			HRESULT hr = pD3DDevice->CreateBuffer(&bufferDesc, &initData, pVertexBuffer.GetAddressOf());
-			if (FAILED(hr))
+			if (pVertexBuffer == nullptr)
 			{
-				LOG_ERROR("Failed to create vertex buffer!");
-				return;
+				LOG_DEBUG("Creating vertex buffer");
+				HRESULT hr = pD3DDevice->CreateBuffer(&bufferDesc, &initData, pVertexBuffer.GetAddressOf());
+				if (FAILED(hr))
+				{
+					LOG_ERROR("Failed to create vertex buffer!");
+					return;
+				}
 			}
 
 			UINT stride = sizeof(Vertex);
@@ -354,7 +375,10 @@ void DxwWindow::RunThreadedTest()
 			bufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 			bufferDesc.CPUAccessFlags = 0;
 
-			pD3DDevice->CreateBuffer(&bufferDesc, nullptr, transformBuffer.GetAddressOf());
+			if (transformBuffer == nullptr)
+			{
+				pD3DDevice->CreateBuffer(&bufferDesc, nullptr, transformBuffer.GetAddressOf());
+			}
 			pD3DDeviceContext->VSSetConstantBuffers(0, 1, transformBuffer.GetAddressOf());
 			D3D_UpdateMatrixSubresources();
 
