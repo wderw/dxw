@@ -101,7 +101,7 @@ private:
 	ComPtr<IDXGISurface> pSurface{ nullptr };
 
 	TransformBuffer transformBufferData{ DirectX::XMMatrixIdentity(), DirectX::XMMatrixIdentity() };
-	D3D11_BUFFER_DESC transformBufferDesc;
+	D3D11_BUFFER_DESC transformBufferDesc{};
 };
 
 }

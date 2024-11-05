@@ -14,16 +14,15 @@ int DxwWindow::instanceCounter = 0;
 
 DxwWindow::~DxwWindow()
 {
-	OutputDebugStringA("******************************** ~DxwWindow() called *******************************\n");
-
-#if defined(DEBUG) || defined(_DEBUG)
-	ComPtr<ID3D11Debug> pDebugDevice;
-	if (SUCCEEDED(pD3DDevice->QueryInterface(pDebugDevice.GetAddressOf())))
-	{
-		//pDebugDevice->ReportLiveDeviceObjects(D3D11_RLDO_DETAIL);
-		pDebugDevice->ReportLiveDeviceObjects(D3D11_RLDO_SUMMARY);
-	}
-#endif
+//	OutputDebugStringA("******************************** ~DxwWindow() called *******************************\n");
+//
+//#if defined(DEBUG) || defined(_DEBUG)
+//	ComPtr<ID3D11Debug> pDebugDevice;
+//	if (SUCCEEDED(pD3DDevice->QueryInterface(pDebugDevice.GetAddressOf())))
+//	{
+//		pDebugDevice->ReportLiveDeviceObjects(D3D11_RLDO_SUMMARY);
+//	}
+//#endif
 }
 
 DxwWindow::DxwWindow()
