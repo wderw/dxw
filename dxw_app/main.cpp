@@ -260,8 +260,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     ShowWindow(hWndMain, nCmdShow);
     UpdateWindow(hWndMain);
 
-    int id = DXW_InitWindow(g_hDrawingPanel);
-    int id2 = DXW_InitWindow(hWndMain);
+    //int id = DXW_InitWindow(g_hDrawingPanel);
+    int id = DXW_InitWindow(hWndMain);
     std::cout << "Window allocated id was: " << id << std::endl;
 
     DXW_SetTargetWindow(id); // redundant but fine - target window is always the last added window
