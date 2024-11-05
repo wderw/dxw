@@ -36,7 +36,7 @@ public:
 	int GetId() const { return id; }
 	DirectX::XMMATRIX RecalculateTransformMatrix();
 
-	void D3D_Clear();
+	void D3D_Clear(float, float, float, float);
 	void D3D_SetScale(float, float, float);
 	void D3D_SetRotation(float, float, float);
 	void D3D_SetTranslation(float, float, float);

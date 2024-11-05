@@ -70,10 +70,10 @@ void DXW_ReleaseDxwWindows()
 	DxwSharedContext::GetInstance().ReleaseDxwWindows();
 }
 
-void DXW_D3D_Clear()
+void DXW_D3D_Clear(float r, float g, float b, float a)
 {
 	LOG_TRACE("DXW_D3D_Clear called");
-	DxwSharedContext::GetInstance().GetCurrentWindow()->D3D_Clear();
+	DxwSharedContext::GetInstance().GetCurrentWindow()->D3D_Clear(r, g, b, a);
 }
 
 void DXW_D2D_Clear()

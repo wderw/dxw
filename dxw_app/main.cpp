@@ -10,7 +10,7 @@ HWND g_hDrawingPanel = nullptr;
 
 typedef int(__stdcall*  DXW_InitWindowFunc)(HWND);
 typedef void(__stdcall* DXW_SetTargetWindowFunc)(int);
-typedef void(__stdcall* DXW_D3D_ClearFunc)();
+typedef void(__stdcall* DXW_D3D_ClearFunc)(float, float, float, float);
 typedef void(__stdcall* DXW_D2D_BeginDrawFunc)();
 typedef void(__stdcall* DXW_D2D_EndDrawFunc)();
 typedef void(__stdcall* DXW_D2D_ClearFunc)();

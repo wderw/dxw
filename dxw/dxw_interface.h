@@ -10,7 +10,7 @@ extern "C" __declspec(dllexport) void DXW_ResizeWindow(unsigned int, unsigned in
 extern "C" __declspec(dllexport) void DXW_SetTargetWindow(int);
 extern "C" __declspec(dllexport) void DXW_DemoRT();
 extern "C" __declspec(dllexport) void DXW_DemoNRT();
-extern "C" __declspec(dllexport) void DXW_D3D_Clear();
+extern "C" __declspec(dllexport) void DXW_D3D_Clear(float, float, float, float);
 extern "C" __declspec(dllexport) void DXW_D2D_BeginDraw();
 extern "C" __declspec(dllexport) void DXW_D2D_EndDraw();
 extern "C" __declspec(dllexport) void DXW_D2D_Clear();

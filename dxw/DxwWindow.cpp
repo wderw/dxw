@@ -30,10 +30,10 @@ DxwWindow::DxwWindow()
 	id = instanceCounter++;
 }
 
-void DxwWindow::D3D_Clear()
+void DxwWindow::D3D_Clear(float r, float g, float b, float a)
 {
-	float colorDarkGray[4] = { 0.15f, 0.15f, 0.15f, 1.0f };
-	pD3DDeviceContext->ClearRenderTargetView(pRenderTargetView.Get(), colorDarkGray);
+	float color[4] = {r, g, b, a};
+	pD3DDeviceContext->ClearRenderTargetView(pRenderTargetView.Get(), color);
 }
 
 void DxwWindow::D3D_SetScale(float x, float y, float z)
@@ -269,7 +269,7 @@ void DxwWindow::DemoNRT()
 	pD3DDeviceContext->PSSetShader(pPixelShader.Get(), nullptr, 0);
 
 	fi += 1.0f;
-	D3D_Clear();
+	D3D_Clear(0.2f, 0.2f, 0.2f, 1.0f);
 
 	D2D_BeginDraw();
 	pD2DDeviceContext->FillRoundedRectangle(D2D1::RoundedRect(D2D1::RectF(250, 250, 600, 400), 15.0f, 15.0f), pDefaultBrush2.Get());
@@ -340,7 +340,7 @@ void DxwWindow::DemoRT()
 			while (true)
 			{
 				fi += 1.0f;
-				D3D_Clear();
+				D3D_Clear(0.2f, 0.2f, 0.2f, 1.0f);
 
 				D2D_BeginDraw();
 				pD2DDeviceContext->FillRoundedRectangle(D2D1::RoundedRect(D2D1::RectF(250, 250, 600, 400), 15.0f, 15.0f), pDefaultBrush2.Get());
