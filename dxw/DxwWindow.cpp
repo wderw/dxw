@@ -303,13 +303,13 @@ void DxwWindow::DemoRT()
 		{
 			float fi = 0;
 
-			//wchar_t fpsText[80] = L"TEST test za¿ó³æ gêœl¹ jaŸñ The quick brown fox jumps over the lazy dog";
-			//D2D1_RECT_F textRect = D2D1::RectF(0, 0, 250, 50);
+			wchar_t fpsText[80] = L"TEST test za¿ó³æ gêœl¹ jaŸñ The quick brown fox jumps over the lazy dog";
+			D2D1_RECT_F textRect = D2D1::RectF(0, 0, 250, 50);
 
-			//pD2DDeviceContext->CreateSolidColorBrush(
-			//	D2D1::ColorF(D2D1::ColorF(0, 1, 0, 1.0f)),
-			//	pDefaultBrush.GetAddressOf()
-			//);
+			pD2DDeviceContext->CreateSolidColorBrush(
+				D2D1::ColorF(D2D1::ColorF(0, 1, 0, 1.0f)),
+				pDefaultBrush.GetAddressOf()
+			);
 
 			pD2DDeviceContext->CreateSolidColorBrush(
 				D2D1::ColorF(D2D1::ColorF(1, 1, 1, 0.3f)),
@@ -360,10 +360,10 @@ void DxwWindow::DemoRT()
 				D3D_SetTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
 				D3D_Draw(12, 0);
 
-				//D2D_BeginDraw();
-				//pD2DDeviceContext->DrawTextW(fpsText, wcslen(fpsText), pDefaultTextFormat, textRect, pDefaultBrush);
+				D2D_BeginDraw();
+				pD2DDeviceContext->DrawTextW(fpsText, wcslen(fpsText), pDefaultTextFormat.Get(), textRect, pDefaultBrush.Get());
 				//pD2DDeviceContext->FillRoundedRectangle(D2D1::RoundedRect(D2D1::RectF(80, 80, 400, 500), 15.0f, 15.0f), pDefaultBrush2);
-				//D2D_EndDraw();
+				D2D_EndDraw();
 
 				DX_Present(1);
 			}
@@ -676,7 +676,7 @@ void DxwWindow::InitDirectX(HWND hWnd)
 	LOG_DEBUG("DirectX initialization started");
 	InitDirect3D(hWnd);
 	InitDirect2D();
-	//CreateTextResources();
+	CreateTextResources();
 	isDirectXInitialized = true;
 
 	PrepareConstantTransformBuffer();
