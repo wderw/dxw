@@ -53,7 +53,7 @@ public:
 	void D2D_EndDraw();
 	void DX_Present(int);
 	void DemoRT();
-	void DemoNRT();
+	void DemoNRT(float);
 	void ResizeWindow(unsigned int, unsigned int);
 
 	bool operator==(const DxwWindow& other) const

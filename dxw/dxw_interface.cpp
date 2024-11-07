@@ -40,10 +40,10 @@ void DXW_DemoRT()
 	DxwSharedContext::GetInstance().GetCurrentWindow()->DemoRT();
 }
 
-void DXW_DemoNRT()
+void DXW_DemoNRT(float fi)
 {
 	LOG_TRACE("DXW_NRTDemo called");
-	DxwSharedContext::GetInstance().GetCurrentWindow()->DemoNRT();
+	DxwSharedContext::GetInstance().GetCurrentWindow()->DemoNRT(fi);
 }
 
 void DXW_Present(int vsync = 1)

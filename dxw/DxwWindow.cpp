@@ -233,10 +233,8 @@ void DxwWindow::ResizeD3DSwapChain(UINT width, UINT height)
 	LOG_INFO("Swap chain size reconfiguration complete");
 }
 
-void DxwWindow::DemoNRT()
+void DxwWindow::DemoNRT(float fi)
 {
-	float fi = 0;
-
 	wchar_t fpsText[80] = L"TEST test za¿ó³æ gêœl¹ jaŸñ The quick brown fox jumps over the lazy dog";
 	D2D1_RECT_F textRect = D2D1::RectF(0, 0, 250, 50);
 
@@ -268,7 +266,6 @@ void DxwWindow::DemoNRT()
 	pD3DDeviceContext->VSSetShader(pVertexShader.Get(), nullptr, 0);
 	pD3DDeviceContext->PSSetShader(pPixelShader.Get(), nullptr, 0);
 
-	fi += 1.0f;
 	D3D_Clear(0.2f, 0.2f, 0.2f, 1.0f);
 
 	D2D_BeginDraw();

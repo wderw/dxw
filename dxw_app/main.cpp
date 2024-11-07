@@ -17,7 +17,7 @@ typedef void(__stdcall* DXW_D2D_ClearFunc)();
 typedef void(__stdcall* DXW_PresentFunc)(int);
 typedef bool(__stdcall* DXW_IsInitializedFunc)();
 typedef void(__stdcall* DXW_DemoRTFunc)();
-typedef void(__stdcall* DXW_DemoNRTFunc)();
+typedef void(__stdcall* DXW_DemoNRTFunc)(float);
 typedef void(__stdcall* DXW_ResizeWindowFunc)(unsigned int, unsigned int);
 typedef void(__stdcall* DXW_ReleaseDxwWindowsFunc)();
 
@@ -200,7 +200,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             int height = HIWORD(lParam);
             DXW_ResizeWindow(width, height);
 
-            DXW_DemoNRT();
+            static float fi = 0;
+            fi += 1.0f;
+
+            DXW_DemoNRT(fi);
         }
         return 0;
     }
@@ -266,7 +269,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     DXW_SetTargetWindow(id); // redundant but fine - target window is always the last added window
     //DXW_DemoRT();
-    DXW_DemoNRT();
+    DXW_DemoNRT(0);
 
     MSG msg = {};
     while (GetMessage(&msg, nullptr, 0, 0))
