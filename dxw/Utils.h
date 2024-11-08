@@ -23,5 +23,6 @@ public:
 	static void HandleHResultError(HRESULT hr);
 	static D3D11_BUFFER_DESC VertexBufferDesc(const std::vector<Vertex>&);
 	static D3D11_BUFFER_DESC TransformBufferDesc();
+	static std::string wstring_to_string(const std::wstring& wstr);
 };
 }

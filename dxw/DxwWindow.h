@@ -66,6 +66,7 @@ private:
 	void SetD3DViewport(int, int);
 	void ResizeD3DSwapChain(UINT, UINT);
 	void PrepareConstantTransformBuffer();
+	void PrintAdapterInfo();
 
 	int id{-1};
 	static int instanceCounter;

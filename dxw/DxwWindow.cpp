@@ -683,7 +683,9 @@ void DxwWindow::InitDirectX(HWND hWnd)
 	isDirectXInitialized = true;
 
 	PrepareConstantTransformBuffer();
+
 	LOG_INFO("DirectX initialization complete");
+	PrintAdapterInfo();
 
 //#if defined(DEBUG) || defined(_DEBUG)
 //	ComPtr<ID3D11Debug> pDebugDevice;
@@ -692,6 +694,40 @@ void DxwWindow::InitDirectX(HWND hWnd)
 //		pDebugDevice->ReportLiveDeviceObjects(D3D11_RLDO_DETAIL);
 //	}
 //#endif
+}
+
+void DxwWindow::PrintAdapterInfo()
+{
+	ComPtr<IDXGIDevice> dxgiDevice;
+	HRESULT hr = pD3DDevice.As(&dxgiDevice);
+	if (FAILED(hr))
+	{
+		LOG_WARN("Failed to get IDXGIDevice from ID3D11Device.");
+		return;
+	}
+
+	ComPtr<IDXGIAdapter> adapter;
+	hr = dxgiDevice->GetAdapter(&adapter);
+	if (FAILED(hr))
+	{
+		LOG_WARN("Failed to get IDXGIAdapter from IDXGIDevice.");
+		return;
+	}
+
+	DXGI_ADAPTER_DESC adapterDesc;
+	hr = adapter->GetDesc(&adapterDesc);
+	if (FAILED(hr))
+	{
+		LOG_WARN("Failed to retrieve adapter description.");
+		return;
+	}
+
+	LOG_INFO("/--------------------------------------*");
+	LOG_INFO("| GPU: {}", Utils::wstring_to_string(adapterDesc.Description));
+	LOG_INFO("| Dedicated Video Memory: {} MB", adapterDesc.DedicatedVideoMemory / (1024 * 1024));
+	LOG_INFO("| Shared System Memory: {} MB", adapterDesc.SharedSystemMemory / (1024 * 1024));
+	LOG_INFO("| Dedicated System Memory: {} MB", adapterDesc.DedicatedSystemMemory / (1024 * 1024));
+	LOG_INFO("\\--------------------------------------*");
 }
 
 }
