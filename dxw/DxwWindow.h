@@ -67,6 +67,7 @@ private:
 	void ResizeD3DSwapChain(UINT, UINT);
 	void PrepareConstantTransformBuffer();
 	void PrintAdapterInfo();
+	void PrintSystemInfo();
 
 	int id{-1};
 	static int instanceCounter;

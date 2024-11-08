@@ -1,4 +1,6 @@
 #include <thread>
+#include <windows.h>
+#include <VersionHelpers.h>
 
 #include "DxwWindow.h"
 
@@ -686,6 +688,7 @@ void DxwWindow::InitDirectX(HWND hWnd)
 
 	LOG_INFO("DirectX initialization complete");
 	PrintAdapterInfo();
+	PrintSystemInfo();
 
 //#if defined(DEBUG) || defined(_DEBUG)
 //	ComPtr<ID3D11Debug> pDebugDevice;
@@ -722,12 +725,73 @@ void DxwWindow::PrintAdapterInfo()
 		return;
 	}
 
-	LOG_INFO("/--------------------------------------*");
+	LOG_INFO("");
+	LOG_INFO("/--------- [ GPU INFORMATION ] ---------*");
 	LOG_INFO("| GPU: {}", Utils::wstring_to_string(adapterDesc.Description));
 	LOG_INFO("| Dedicated Video Memory: {} MB", adapterDesc.DedicatedVideoMemory / (1024 * 1024));
 	LOG_INFO("| Shared System Memory: {} MB", adapterDesc.SharedSystemMemory / (1024 * 1024));
 	LOG_INFO("| Dedicated System Memory: {} MB", adapterDesc.DedicatedSystemMemory / (1024 * 1024));
 	LOG_INFO("\\--------------------------------------*");
+	LOG_INFO("");
+}
+
+void DxwWindow::PrintSystemInfo()
+{
+	LOG_INFO("/------- [ SYSTEM INFORMATION ] -------*");
+	// memory info
+	MEMORYSTATUSEX memInfo;
+	memInfo.dwLength = sizeof(memInfo);
+	if (GlobalMemoryStatusEx(&memInfo))
+	{
+		LOG_INFO("| Total RAM: {} MB", memInfo.ullTotalPhys / (1024 * 1024));
+		LOG_INFO("| Available RAM: {} MB", memInfo.ullAvailPhys / (1024 * 1024));
+	}
+	else
+	{
+		LOG_WARN("Failed to retrieve memory information.");
+	}
+
+	// CPU info
+	HKEY hKey;
+	if (RegOpenKeyEx(HKEY_LOCAL_MACHINE,
+		L"HARDWARE\\DESCRIPTION\\System\\CentralProcessor\\0",
+		0,
+		KEY_READ,
+		&hKey) == ERROR_SUCCESS) {
+		DWORD bufferSize = 0;
+		RegQueryValueEx(hKey, L"ProcessorNameString", nullptr, nullptr, nullptr, &bufferSize);
+		std::wstring cpuName(bufferSize / sizeof(wchar_t), L'\0');
+		if (RegQueryValueEx(hKey, L"ProcessorNameString", nullptr, nullptr,
+			reinterpret_cast<LPBYTE>(&cpuName[0]), &bufferSize) == ERROR_SUCCESS)
+		{
+			LOG_INFO("| CPU: {}", Utils::wstring_to_string(cpuName));
+		}
+		RegCloseKey(hKey);
+	}
+	else
+	{
+		LOG_WARN("Failed to retrieve CPU information.");
+	}
+
+	// OS info
+	OSVERSIONINFOEXW osInfo;
+	ZeroMemory(&osInfo, sizeof(OSVERSIONINFOEXW));
+	osInfo.dwOSVersionInfoSize = sizeof(OSVERSIONINFOEXW);
+
+	typedef NTSTATUS(WINAPI* RtlGetVersionPtr)(PRTL_OSVERSIONINFOW);
+	RtlGetVersionPtr RtlGetVersion = (RtlGetVersionPtr)GetProcAddress(GetModuleHandleW(L"ntdll.dll"), "RtlGetVersion");
+
+	if (RtlGetVersion != nullptr && RtlGetVersion((PRTL_OSVERSIONINFOW)&osInfo) == 0)
+	{
+		LOG_INFO("| Operating System Version: {}.{}", osInfo.dwMajorVersion, osInfo.dwMinorVersion);
+		LOG_INFO("| Build Number: {}", osInfo.dwBuildNumber);
+	}
+	else
+	{
+		LOG_WARN("Failed to retrieve OS version information!");
+	}
+	LOG_INFO("\\--------------------------------------*");
+	LOG_INFO("");
 }
 
 }
