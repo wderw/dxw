@@ -70,6 +70,7 @@ private:
 	void PrepareConstantTransformBuffer();
 	void PrintAdapterInfo();
 	void PrintSystemInfo();
+	void CreateSolidBrush2D(float r, float g, float b, float a, std::string name);
 
 	int id{-1};
 	static int instanceCounter;

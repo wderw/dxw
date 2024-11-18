@@ -640,21 +640,8 @@ void DxwWindow::CreateBrushResources()
 {
 	LOG_DEBUG("Creating brush resources");
 
-	ComPtr<ID2D1SolidColorBrush> defaultBrush{ nullptr };
-	ComPtr<ID2D1SolidColorBrush> defaultBrush2{ nullptr };
-
-	pD2DDeviceContext->CreateSolidColorBrush(
-		D2D1::ColorF(D2D1::ColorF(0, 1, 0, 1.0f)),
-		defaultBrush.GetAddressOf()
-	);
-
-	pD2DDeviceContext->CreateSolidColorBrush(
-		D2D1::ColorF(D2D1::ColorF(1, 1, 1, 0.3f)),
-		defaultBrush2.GetAddressOf()
-	);
-
-	DxwSharedContext::GetInstance().AddSolidBrush2D("Default", defaultBrush);
-	DxwSharedContext::GetInstance().AddSolidBrush2D("Default2", defaultBrush2);
+	CreateSolidBrush2D(0, 1.0f, 0, 1.0f, "Default");
+	CreateSolidBrush2D(1.0f, 1.0f, 1.0f, 0.3f, "Default2");
 }
 
 void DxwWindow::CreateTextResources()
@@ -810,6 +797,18 @@ void DxwWindow::PrintSystemInfo()
 		LOG_WARN("Failed to retrieve OS version information!");
 	}
 	LOG_INFO("\\--------------------------------------*");
+}
+
+void DxwWindow::CreateSolidBrush2D(float r, float g, float b, float a, std::string name)
+{
+	ComPtr<ID2D1SolidColorBrush> brush{ nullptr };
+
+	pD2DDeviceContext->CreateSolidColorBrush(
+		D2D1::ColorF(D2D1::ColorF(r, g, b, a)),
+		brush.GetAddressOf()
+	);
+
+	DxwSharedContext::GetInstance().AddSolidBrush2D(name, brush);
 }
 
 }
