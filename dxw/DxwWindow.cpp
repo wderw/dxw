@@ -485,14 +485,14 @@ void DxwWindow::InitDirect3D(HWND hWnd)
 	ComPtr<ID3DBlob> pVSBlob{ nullptr };
 	ComPtr<ID3DBlob> pPSBlob{ nullptr };
 
-	hr = D3DCompile(DxwSharedContext::GetInstance().vertexShaderSource, strlen(DxwSharedContext::GetInstance().vertexShaderSource), nullptr, nullptr, nullptr, "main", "vs_5_0", 0, 0, pVSBlob.ReleaseAndGetAddressOf(), nullptr);
+	hr = D3DCompile(DxwSharedContext::GetInstance().GetVertexShaderSource(), strlen(DxwSharedContext::GetInstance().GetVertexShaderSource()), nullptr, nullptr, nullptr, "main", "vs_5_0", 0, 0, pVSBlob.ReleaseAndGetAddressOf(), nullptr);
 	if (FAILED(hr))
 	{
 		LOG_ERROR("Failed to compile vertex shader!");
 		return;
 	}
 
-	hr = D3DCompile(DxwSharedContext::GetInstance().pixelShaderSource, strlen(DxwSharedContext::GetInstance().pixelShaderSource), nullptr, nullptr, nullptr, "main", "ps_5_0", 0, 0, pPSBlob.ReleaseAndGetAddressOf(), nullptr);
+	hr = D3DCompile(DxwSharedContext::GetInstance().GetPixelShaderSource(), strlen(DxwSharedContext::GetInstance().GetPixelShaderSource()), nullptr, nullptr, nullptr, "main", "ps_5_0", 0, 0, pPSBlob.ReleaseAndGetAddressOf(), nullptr);
 	if (FAILED(hr))
 	{
 		LOG_ERROR("Failed to compile pixel shader!");

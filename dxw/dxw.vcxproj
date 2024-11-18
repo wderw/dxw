@@ -156,6 +156,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp" />
+    <ClCompile Include="DxwSharedContext.cpp" />
     <ClCompile Include="DxwWindow.cpp" />
     <ClCompile Include="dxw_interface.cpp" />
     <ClCompile Include="Log.cpp" />
