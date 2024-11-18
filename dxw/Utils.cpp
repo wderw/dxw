@@ -47,13 +47,12 @@ std::vector<Vertex> Utils::GenerateTetrahedron()
 	return tetrahedron;
 }
 
-std::vector<Vertex> Utils::GenerateLines(int width, int height)
+std::vector<Vertex> Utils::GenerateLines(int width, int height, int count)
 {
 	// lines
-	constexpr static int DRAWLIB_COUNT{ 100000 };
 	std::vector<Vertex> lineVerts{};
-	lineVerts.resize(DRAWLIB_COUNT);
-	for (size_t i = 0; i < DRAWLIB_COUNT; ++i)
+	lineVerts.resize(count);
+	for (size_t i = 0; i < count; ++i)
 	{
 		float x = Utils::ConvertPixelToNDCX(0, width, static_cast<float>(width) / static_cast<float>(height));
 		float y = Utils::ConvertPixelToNDCY(0, height);
@@ -61,7 +60,7 @@ std::vector<Vertex> Utils::GenerateLines(int width, int height)
 		lineVerts[i].color = DirectX::XMFLOAT4(1, 0, 0, 1);
 	}
 
-	for (size_t i = 0; i < DRAWLIB_COUNT; i += 2)
+	for (size_t i = 0; i < count; i += 2)
 	{
 		float x = Utils::ConvertPixelToNDCX(std::rand() % width, width, static_cast<float>(width) / static_cast<float>(height));
 		float y = Utils::ConvertPixelToNDCY(std::rand() % height, height);

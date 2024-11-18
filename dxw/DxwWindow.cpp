@@ -101,6 +101,11 @@ void DxwWindow::D2D_Clear()
 	pD2DDeviceContext->Clear(D2D1::ColorF(0, 1, 0, 1));
 }
 
+void DxwWindow::D2D_DrawLine(float x0, float y0, float x1, float y1)
+{
+	pD2DDeviceContext->DrawLine(D2D1::Point2F(x0, y0), D2D1::Point2F(x1, y1), pDefaultBrush.Get());
+}
+
 void DxwWindow::D2D_BeginDraw()
 {
 	pD2DDeviceContext->BeginDraw();
@@ -240,33 +245,32 @@ void DxwWindow::DemoNRT(float fi)
 	wchar_t fpsText[80] = L"TEST test za¿ó³æ gêœl¹ jaŸñ The quick brown fox jumps over the lazy dog";
 	D2D1_RECT_F textRect = D2D1::RectF(0, 0, 250, 50);
 
-	pD2DDeviceContext->CreateSolidColorBrush(
-		D2D1::ColorF(D2D1::ColorF(0, 1, 0, 1.0f)),
-		pDefaultBrush.GetAddressOf()
-	);
-
-	pD2DDeviceContext->CreateSolidColorBrush(
-		D2D1::ColorF(D2D1::ColorF(1, 1, 1, 0.3f)),
-		pDefaultBrush2.GetAddressOf()
-	);
-
-	std::vector<Vertex> lineVerts = Utils::GenerateLines(windowWidth, windowHeight);
-	std::vector<Vertex> tetrahedronVerts = Utils::GenerateTetrahedron();
+	static std::vector<Vertex> lineVerts = Utils::GenerateLines(windowWidth, windowHeight, 1000000);
+	static std::vector<Vertex> tetrahedronVerts = Utils::GenerateTetrahedron();
 
 	D3D11_BUFFER_DESC vertexBufferDesc = Utils::VertexBufferDesc(tetrahedronVerts);
 	D3D11_SUBRESOURCE_DATA initData = { tetrahedronVerts.data() };
+
+	D3D11_BUFFER_DESC linesVertexBufferDesc = Utils::VertexBufferDesc(lineVerts);
+	D3D11_SUBRESOURCE_DATA lineInitData = { lineVerts.data() };
 
 	if (pVertexBuffer == nullptr)
 	{
 		pD3DDevice->CreateBuffer(&vertexBufferDesc, &initData, pVertexBuffer.GetAddressOf());
 	}
 
+	if (pLineVertexBuffer == nullptr)
+	{
+		pD3DDevice->CreateBuffer(&linesVertexBufferDesc, &lineInitData, pLineVertexBuffer.GetAddressOf());
+	}
+
 	UINT stride = sizeof(Vertex);
 	UINT offset = 0;
 	pD3DDeviceContext->IASetInputLayout(pInputLayout.Get());
-	pD3DDeviceContext->IASetVertexBuffers(0, 1, pVertexBuffer.GetAddressOf(), &stride, &offset);
 	pD3DDeviceContext->VSSetShader(pVertexShader.Get(), nullptr, 0);
 	pD3DDeviceContext->PSSetShader(pPixelShader.Get(), nullptr, 0);
+
+	pD3DDeviceContext->IASetVertexBuffers(0, 1, pVertexBuffer.GetAddressOf(), &stride, &offset);
 
 	D3D_Clear(0.2f, 0.2f, 0.2f, 1.0f);
 
@@ -294,12 +298,17 @@ void DxwWindow::DemoNRT(float fi)
 	D3D_SetTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
 	D3D_Draw(12, 0);
 
+	pD3DDeviceContext->IASetVertexBuffers(0, 1, pLineVertexBuffer.GetAddressOf(), &stride, &offset);
+	D3D_SetTopology(D3D11_PRIMITIVE_TOPOLOGY_LINESTRIP);
+	D3D_ResetTransformMatrix();
+	D3D_ResetProjectionMatrix();
+	D3D_UpdateMatrixSubresources();
+	D3D_Draw(1000000, 0);
+
 	D2D_BeginDraw();
 	pD2DDeviceContext->DrawTextW(fpsText, wcslen(fpsText), pDefaultTextFormat.Get(), textRect, pDefaultBrush.Get());
 	pD2DDeviceContext->FillRoundedRectangle(D2D1::RoundedRect(D2D1::RectF(80, 80, 400, 500), 15.0f, 15.0f), pDefaultBrush2.Get());
 	D2D_EndDraw();
-
-	DX_Present(1);
 }
 
 void DxwWindow::DemoRT()
@@ -311,17 +320,7 @@ void DxwWindow::DemoRT()
 			wchar_t fpsText[80] = L"TEST test za¿ó³æ gêœl¹ jaŸñ The quick brown fox jumps over the lazy dog";
 			D2D1_RECT_F textRect = D2D1::RectF(0, 0, 250, 50);
 
-			pD2DDeviceContext->CreateSolidColorBrush(
-				D2D1::ColorF(D2D1::ColorF(0, 1, 0, 1.0f)),
-				pDefaultBrush.GetAddressOf()
-			);
-
-			pD2DDeviceContext->CreateSolidColorBrush(
-				D2D1::ColorF(D2D1::ColorF(1, 1, 1, 0.3f)),
-				pDefaultBrush2.GetAddressOf()
-			);
-
-			std::vector<Vertex> lineVerts = Utils::GenerateLines(windowWidth, windowHeight);
+			std::vector<Vertex> lineVerts = Utils::GenerateLines(windowWidth, windowHeight, 1000000);
 			std::vector<Vertex> tetrahedronVerts = Utils::GenerateTetrahedron();
 
 			D3D11_BUFFER_DESC vertexBufferDesc = Utils::VertexBufferDesc(tetrahedronVerts);
@@ -637,6 +636,21 @@ void DxwWindow::InitDirect2D()
 	LOG_INFO("Direct2D initialization complete");
 }
 
+void DxwWindow::CreateBrushResources()
+{
+	LOG_DEBUG("Creating brush resources");
+
+	pD2DDeviceContext->CreateSolidColorBrush(
+		D2D1::ColorF(D2D1::ColorF(0, 1, 0, 1.0f)),
+		pDefaultBrush.GetAddressOf()
+	);
+
+	pD2DDeviceContext->CreateSolidColorBrush(
+		D2D1::ColorF(D2D1::ColorF(1, 1, 1, 0.3f)),
+		pDefaultBrush2.GetAddressOf()
+	);
+}
+
 void DxwWindow::CreateTextResources()
 {
 	LOG_DEBUG("Creating text resources");
@@ -682,6 +696,7 @@ void DxwWindow::InitDirectX(HWND hWnd)
 	InitDirect3D(hWnd);
 	InitDirect2D();
 	CreateTextResources();
+	CreateBrushResources();
 	isDirectXInitialized = true;
 
 	PrepareConstantTransformBuffer();
@@ -725,14 +740,12 @@ void DxwWindow::PrintAdapterInfo()
 		return;
 	}
 
-	LOG_INFO("");
-	LOG_INFO("/--------- [ GPU INFORMATION ] ---------*");
+	LOG_INFO("/--------- [ GPU INFORMATION ] --------*");
 	LOG_INFO("| GPU: {}", Utils::wstring_to_string(adapterDesc.Description));
 	LOG_INFO("| Dedicated Video Memory: {} MB", adapterDesc.DedicatedVideoMemory / (1024 * 1024));
 	LOG_INFO("| Shared System Memory: {} MB", adapterDesc.SharedSystemMemory / (1024 * 1024));
 	LOG_INFO("| Dedicated System Memory: {} MB", adapterDesc.DedicatedSystemMemory / (1024 * 1024));
 	LOG_INFO("\\--------------------------------------*");
-	LOG_INFO("");
 }
 
 void DxwWindow::PrintSystemInfo()
@@ -791,7 +804,6 @@ void DxwWindow::PrintSystemInfo()
 		LOG_WARN("Failed to retrieve OS version information!");
 	}
 	LOG_INFO("\\--------------------------------------*");
-	LOG_INFO("");
 }
 
 }

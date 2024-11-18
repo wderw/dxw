@@ -204,6 +204,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             fi += 1.0f;
 
             DXW_DemoNRT(fi);
+            DXW_Present(1);
         }
         return 0;
     }
@@ -270,6 +271,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     DXW_SetTargetWindow(id); // redundant but fine - target window is always the last added window
     //DXW_DemoRT();
     DXW_DemoNRT(0);
+    DXW_Present(1);
 
     MSG msg = {};
     while (GetMessage(&msg, nullptr, 0, 0))

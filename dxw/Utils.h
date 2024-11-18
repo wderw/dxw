@@ -19,7 +19,7 @@ public:
 	static float ConvertPixelToNDCY(int pixelY, int height);
 	static float RandomFloat(float min, float max);
 	static std::vector<Vertex> GenerateTetrahedron();
-	static std::vector<Vertex> GenerateLines(int width, int height);
+	static std::vector<Vertex> GenerateLines(int width, int height, int count);
 	static void HandleHResultError(HRESULT hr);
 	static D3D11_BUFFER_DESC VertexBufferDesc(const std::vector<Vertex>&);
 	static D3D11_BUFFER_DESC TransformBufferDesc();

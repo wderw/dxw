@@ -30,6 +30,7 @@ public:
 	void InitDirectX(HWND);
 	void InitDirect3D(HWND);
 	void InitDirect2D();
+	void CreateBrushResources();
 	void CreateTextResources();
 	bool IsInitialized() const;
 
@@ -49,6 +50,7 @@ public:
 	void D3D_Draw(int, int);
 
 	void D2D_Clear();
+	void D2D_DrawLine(float, float, float, float);
 	void D2D_BeginDraw();
 	void D2D_EndDraw();
 	void DX_Present(int);
@@ -101,6 +103,8 @@ private:
 	ComPtr<ID3D11DepthStencilView> pDepthStencilView{ nullptr };
 	ComPtr<ID3D11Buffer> pTransformBuffer{ nullptr };
 	ComPtr<IDXGISurface> pSurface{ nullptr };
+
+	ComPtr<ID3D11Buffer> pLineVertexBuffer{ nullptr };
 
 	TransformBuffer transformBufferData{ DirectX::XMMatrixIdentity(), DirectX::XMMatrixIdentity() };
 	D3D11_BUFFER_DESC transformBufferDesc{};
