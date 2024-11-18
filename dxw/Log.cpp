@@ -12,6 +12,12 @@ void Log::Init()
 	spdlog::set_pattern("%^[%n] <%H:%M:%S.%e> [%l] %v%$");
 	s_Logger = spdlog::stdout_color_mt("DXW_LOG");
 	s_Logger->set_level(spdlog::level::trace);
+
+#if defined(DEBUG) && defined(_DEBUG)
+	LOG_WARN("DXW configuration: DEBUG");
+#else
+	LOG_WARN("DXW configuration: RELEASE");
+#endif
 }
 
 }

@@ -298,12 +298,12 @@ void DxwWindow::DemoNRT(float fi)
 	D3D_SetTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
 	D3D_Draw(12, 0);
 
-	pD3DDeviceContext->IASetVertexBuffers(0, 1, pLineVertexBuffer.GetAddressOf(), &stride, &offset);
-	D3D_SetTopology(D3D11_PRIMITIVE_TOPOLOGY_LINESTRIP);
-	D3D_ResetTransformMatrix();
-	D3D_ResetProjectionMatrix();
-	D3D_UpdateMatrixSubresources();
-	D3D_Draw(1000000, 0);
+	//pD3DDeviceContext->IASetVertexBuffers(0, 1, pLineVertexBuffer.GetAddressOf(), &stride, &offset);
+	//D3D_SetTopology(D3D11_PRIMITIVE_TOPOLOGY_LINESTRIP);
+	//D3D_ResetTransformMatrix();
+	//D3D_ResetProjectionMatrix();
+	//D3D_UpdateMatrixSubresources();
+	//D3D_Draw(1000000, 0);
 
 	D2D_BeginDraw();
 	pD2DDeviceContext->DrawTextW(fpsText, wcslen(fpsText), pDefaultTextFormat.Get(), textRect, pDefaultBrush.Get());

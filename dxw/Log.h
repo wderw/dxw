@@ -37,3 +37,7 @@ private:
 #define LOG_CRITICAL(format, ...) \
     ::dxw::Log::GetLogger()->critical("[{}:{}]: " format, dxw::Utils::ExtractBaseName(__FILE__), __LINE__, ##__VA_ARGS__)
 
+#if !defined(DEBUG) && !defined(_DEBUG)
+#define LOG_TRACE
+#define LOG_DEBUG
+#endif
