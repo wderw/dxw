@@ -19,7 +19,7 @@ typedef bool(__stdcall* DXW_IsInitializedFunc)();
 typedef void(__stdcall* DXW_DemoRTFunc)();
 typedef void(__stdcall* DXW_DemoNRTFunc)(float);
 typedef void(__stdcall* DXW_ResizeWindowFunc)(unsigned int, unsigned int);
-typedef void(__stdcall* DXW_ReleaseDxwWindowsFunc)();
+typedef void(__stdcall* DXW_ReleaseDxwResourcesFunc)();
 
 DXW_SetTargetWindowFunc   DXW_SetTargetWindow   = nullptr;
 DXW_InitWindowFunc        DXW_InitWindow        = nullptr;
@@ -32,7 +32,7 @@ DXW_IsInitializedFunc     DXW_IsInitialized     = nullptr;
 DXW_DemoRTFunc            DXW_DemoRT            = nullptr;
 DXW_DemoNRTFunc           DXW_DemoNRT           = nullptr;
 DXW_ResizeWindowFunc      DXW_ResizeWindow      = nullptr;
-DXW_ReleaseDxwWindowsFunc DXW_ReleaseDxwWindows = nullptr;
+DXW_ReleaseDxwResourcesFunc DXW_ReleaseDxwResources = nullptr;
 
 const std::wstring libraryName = L"dxw.dll";
 void CreateDrawingPanel(HWND parentHwnd);
@@ -165,12 +165,12 @@ bool LoadWrapperDll()
             MessageBox(nullptr, errorMsg, _T("Error"), MB_OK);
         }
 
-        DXW_ReleaseDxwWindows = (DXW_ReleaseDxwWindowsFunc)GetProcAddress(hDLL, "DXW_ReleaseDxwWindows");
-        if (!DXW_ReleaseDxwWindows)
+        DXW_ReleaseDxwResources = (DXW_ReleaseDxwResourcesFunc)GetProcAddress(hDLL, "DXW_ReleaseDxwResources");
+        if (!DXW_ReleaseDxwResources)
         {
             DWORD error = GetLastError();
             TCHAR errorMsg[256];
-            _stprintf_s(errorMsg, _T("DXW_ReleaseDxwWindows GetProcAddress failed. Error code: %lu"), error);
+            _stprintf_s(errorMsg, _T("DXW_ReleaseDxwResources GetProcAddress failed. Error code: %lu"), error);
             MessageBox(nullptr, errorMsg, _T("Error"), MB_OK);
         }
     }
@@ -226,7 +226,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         return 0;
     }
     case WM_DESTROY:
-        DXW_ReleaseDxwWindows();
+        DXW_ReleaseDxwResources();
         PostQuitMessage(0);
         return 0;
     default:

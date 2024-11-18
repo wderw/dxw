@@ -64,10 +64,10 @@ bool DXW_IsInitialized()
 	return false;
 }
 
-void DXW_ReleaseDxwWindows()
+void DXW_ReleaseDxwResources()
 {
-	LOG_TRACE("DXW_ReleaseDxwWindows called");
-	DxwSharedContext::GetInstance().ReleaseDxwWindows();
+	LOG_TRACE("DXW_ReleaseDxwResources called");
+	DxwSharedContext::GetInstance().ReleaseDxwResources();
 }
 
 void DXW_D3D_Clear(float r, float g, float b, float a)

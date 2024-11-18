@@ -16,9 +16,10 @@ public:
         return instance;
     }
 
-    void ReleaseDxwWindows()
+    void ReleaseDxwResources()
     {
         windows.clear();
+        brushes2d.clear();
     }
 
     void RegisterWindow(std::shared_ptr<DxwWindow> window)
@@ -58,7 +59,7 @@ public:
         }
         else
         {
-            LOG_WARN("Error: window with id: {} was not found!", id);
+            LOG_WARN("Window with id: {} was not found!", id);
             return nullptr;
         }
     }
@@ -68,21 +69,38 @@ public:
         return GetWindowByID(GetTargetId());
     }
 
+    void AddSolidBrush2D(const std::string& name, ComPtr<ID2D1Brush> brush)
+    {
+        brushes2d.insert({ name, brush });
+    }
+
+    ComPtr<ID2D1Brush> GetSolidBrush2D(const std::string& name)
+    {
+        auto it = brushes2d.find(name);
+
+        if (it != brushes2d.end())
+        {
+            return it->second;
+        }
+        LOG_WARN("SolidBrush2D with name: {} was not found!", name);
+    }
+
 private:
     DxwSharedContext()
     {
-        LOG_DEBUG("Shared context created");
+        LOG_DEBUG("Creating Shared Context");
     }
 
     ~DxwSharedContext()
     {
-        LOG_DEBUG("Shared context destroyed");
+        LOG_DEBUG("Destroying Shared Context ");
     }
 
     DxwSharedContext(const DxwSharedContext&) = delete;
     DxwSharedContext& operator=(const DxwSharedContext&) = delete;
 
     std::unordered_map<int, std::shared_ptr<DxwWindow>> windows;
+    std::unordered_map<std::string, ComPtr<ID2D1Brush>> brushes2d;
     int targetId{ -1 };
 
 public:

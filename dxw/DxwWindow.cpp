@@ -103,7 +103,7 @@ void DxwWindow::D2D_Clear()
 
 void DxwWindow::D2D_DrawLine(float x0, float y0, float x1, float y1)
 {
-	pD2DDeviceContext->DrawLine(D2D1::Point2F(x0, y0), D2D1::Point2F(x1, y1), pDefaultBrush.Get());
+	pD2DDeviceContext->DrawLine(D2D1::Point2F(x0, y0), D2D1::Point2F(x1, y1), DxwSharedContext::GetInstance().GetSolidBrush2D("Default").Get());
 }
 
 void DxwWindow::D2D_BeginDraw()
@@ -275,7 +275,7 @@ void DxwWindow::DemoNRT(float fi)
 	D3D_Clear(0.2f, 0.2f, 0.2f, 1.0f);
 
 	D2D_BeginDraw();
-	pD2DDeviceContext->FillRoundedRectangle(D2D1::RoundedRect(D2D1::RectF(250, 250, 600, 400), 15.0f, 15.0f), pDefaultBrush2.Get());
+	pD2DDeviceContext->FillRoundedRectangle(D2D1::RoundedRect(D2D1::RectF(250, 250, 600, 400), 15.0f, 15.0f), DxwSharedContext::GetInstance().GetSolidBrush2D("Default2").Get());
 	D2D_EndDraw();
 
 	pD3DDeviceContext->ClearDepthStencilView(pDepthStencilView.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
@@ -306,8 +306,8 @@ void DxwWindow::DemoNRT(float fi)
 	//D3D_Draw(1000000, 0);
 
 	D2D_BeginDraw();
-	pD2DDeviceContext->DrawTextW(fpsText, wcslen(fpsText), pDefaultTextFormat.Get(), textRect, pDefaultBrush.Get());
-	pD2DDeviceContext->FillRoundedRectangle(D2D1::RoundedRect(D2D1::RectF(80, 80, 400, 500), 15.0f, 15.0f), pDefaultBrush2.Get());
+	pD2DDeviceContext->DrawTextW(fpsText, wcslen(fpsText), pDefaultTextFormat.Get(), textRect, DxwSharedContext::GetInstance().GetSolidBrush2D("Default").Get());
+	pD2DDeviceContext->FillRoundedRectangle(D2D1::RoundedRect(D2D1::RectF(80, 80, 400, 500), 15.0f, 15.0f), DxwSharedContext::GetInstance().GetSolidBrush2D("Default2").Get());
 	D2D_EndDraw();
 }
 
@@ -341,7 +341,7 @@ void DxwWindow::DemoRT()
 				D3D_Clear(0.2f, 0.2f, 0.2f, 1.0f);
 
 				D2D_BeginDraw();
-				pD2DDeviceContext->FillRoundedRectangle(D2D1::RoundedRect(D2D1::RectF(250, 250, 600, 400), 15.0f, 15.0f), pDefaultBrush2.Get());
+				pD2DDeviceContext->FillRoundedRectangle(D2D1::RoundedRect(D2D1::RectF(250, 250, 600, 400), 15.0f, 15.0f), DxwSharedContext::GetInstance().GetSolidBrush2D("Default2").Get());
 				D2D_EndDraw();
 
 				pD3DDeviceContext->ClearDepthStencilView(pDepthStencilView.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
@@ -365,8 +365,8 @@ void DxwWindow::DemoRT()
 				D3D_Draw(12, 0);
 
 				D2D_BeginDraw();
-				pD2DDeviceContext->DrawTextW(fpsText, wcslen(fpsText), pDefaultTextFormat.Get(), textRect, pDefaultBrush.Get());
-				//pD2DDeviceContext->FillRoundedRectangle(D2D1::RoundedRect(D2D1::RectF(80, 80, 400, 500), 15.0f, 15.0f), pDefaultBrush2);
+				pD2DDeviceContext->DrawTextW(fpsText, wcslen(fpsText), pDefaultTextFormat.Get(), textRect, DxwSharedContext::GetInstance().GetSolidBrush2D("Default").Get());
+				//pD2DDeviceContext->FillRoundedRectangle(D2D1::RoundedRect(D2D1::RectF(80, 80, 400, 500), 15.0f, 15.0f), DxwSharedContext::GetInstance().GetSolidBrush2D("Default2").Get());
 				D2D_EndDraw();
 
 				DX_Present(1);
@@ -640,15 +640,21 @@ void DxwWindow::CreateBrushResources()
 {
 	LOG_DEBUG("Creating brush resources");
 
+	ComPtr<ID2D1SolidColorBrush> defaultBrush{ nullptr };
+	ComPtr<ID2D1SolidColorBrush> defaultBrush2{ nullptr };
+
 	pD2DDeviceContext->CreateSolidColorBrush(
 		D2D1::ColorF(D2D1::ColorF(0, 1, 0, 1.0f)),
-		pDefaultBrush.GetAddressOf()
+		defaultBrush.GetAddressOf()
 	);
 
 	pD2DDeviceContext->CreateSolidColorBrush(
 		D2D1::ColorF(D2D1::ColorF(1, 1, 1, 0.3f)),
-		pDefaultBrush2.GetAddressOf()
+		defaultBrush2.GetAddressOf()
 	);
+
+	DxwSharedContext::GetInstance().AddSolidBrush2D("Default", defaultBrush);
+	DxwSharedContext::GetInstance().AddSolidBrush2D("Default2", defaultBrush2);
 }
 
 void DxwWindow::CreateTextResources()
