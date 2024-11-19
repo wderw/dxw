@@ -82,10 +82,16 @@ void DXW_D2D_Clear()
 	DxwSharedContext::GetInstance().GetCurrentWindow()->D2D_Clear();
 }
 
-void DXW_D2D_DrawLine(float x0, float y0, float x1, float y1)
+void DXW_D2D_DrawLine(float x0, float y0, float x1, float y1, const char* brushName)
 {
 	LOG_TRACE("DXW_D2D_DrawLine called");
-	DxwSharedContext::GetInstance().GetCurrentWindow()->D2D_DrawLine(x0, y0, x1, y1);
+	DxwSharedContext::GetInstance().GetCurrentWindow()->D2D_DrawLine(x0, y0, x1, y1, brushName);
+}
+
+void DXW_D2D_CreateSolidBrush(float r, float g, float b, float a, const char* name)
+{
+	LOG_TRACE("DXW_D2D_CreateSolidBrush called");
+	DxwSharedContext::GetInstance().GetCurrentWindow()->D2D_CreateSolidBrush(r, g, b, a, name);
 }
 
 void DXW_D2D_BeginDraw()

@@ -62,7 +62,7 @@ std::shared_ptr<DxwWindow> DxwSharedContext::GetCurrentWindow()
     return GetWindowByID(GetTargetId());
 }
 
-void DxwSharedContext::AddSolidBrush2D(const std::string& name, ComPtr<ID2D1Brush> brush)
+void DxwSharedContext::RegisterSolidBrush2D(const std::string& name, ComPtr<ID2D1Brush> brush)
 {
     brushes2d.insert({ name, brush });
 }
@@ -70,12 +70,21 @@ void DxwSharedContext::AddSolidBrush2D(const std::string& name, ComPtr<ID2D1Brus
 ComPtr<ID2D1Brush> DxwSharedContext::GetSolidBrush2D(const std::string& name)
 {
     auto it = brushes2d.find(name);
-
     if (it != brushes2d.end())
     {
         return it->second;
     }
-    LOG_WARN("SolidBrush2D with name: {} was not found!", name);
+
+    const std::string& defaultBrushName{ "Default2" };
+    LOG_WARN("SolidBrush2D with name: {} was not found! Attempting to use default: {} brush", name, defaultBrushName);
+    auto itd = brushes2d.find(defaultBrushName);
+    if (itd != brushes2d.end())
+    {
+        return it->second;
+    }
+
+    LOG_ERROR("Could not find default: {} brush!", defaultBrushName);
+    return nullptr;
 }
 
 const char* DxwSharedContext::GetVertexShaderSource()

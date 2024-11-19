@@ -101,9 +101,9 @@ void DxwWindow::D2D_Clear()
 	pD2DDeviceContext->Clear(D2D1::ColorF(0, 1, 0, 1));
 }
 
-void DxwWindow::D2D_DrawLine(float x0, float y0, float x1, float y1)
+void DxwWindow::D2D_DrawLine(float x0, float y0, float x1, float y1, const std::string& brushName)
 {
-	pD2DDeviceContext->DrawLine(D2D1::Point2F(x0, y0), D2D1::Point2F(x1, y1), DxwSharedContext::GetInstance().GetSolidBrush2D("Default").Get());
+	pD2DDeviceContext->DrawLine(D2D1::Point2F(x0, y0), D2D1::Point2F(x1, y1), DxwSharedContext::GetInstance().GetSolidBrush2D(brushName).Get());
 }
 
 void DxwWindow::D2D_BeginDraw()
@@ -341,7 +341,7 @@ void DxwWindow::DemoRT()
 				D3D_Clear(0.2f, 0.2f, 0.2f, 1.0f);
 
 				D2D_BeginDraw();
-				pD2DDeviceContext->FillRoundedRectangle(D2D1::RoundedRect(D2D1::RectF(250, 250, 600, 400), 15.0f, 15.0f), DxwSharedContext::GetInstance().GetSolidBrush2D("Default2").Get());
+				pD2DDeviceContext->FillRoundedRectangle(D2D1::RoundedRect(D2D1::RectF(250, 250, 600, 400), 15.0f, 15.0f), DxwSharedContext::GetInstance().GetSolidBrush2D("dxwOrange").Get());
 				D2D_EndDraw();
 
 				pD3DDeviceContext->ClearDepthStencilView(pDepthStencilView.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
@@ -365,8 +365,14 @@ void DxwWindow::DemoRT()
 				D3D_Draw(12, 0);
 
 				D2D_BeginDraw();
-				pD2DDeviceContext->DrawTextW(fpsText, wcslen(fpsText), pDefaultTextFormat.Get(), textRect, DxwSharedContext::GetInstance().GetSolidBrush2D("Default").Get());
-				//pD2DDeviceContext->FillRoundedRectangle(D2D1::RoundedRect(D2D1::RectF(80, 80, 400, 500), 15.0f, 15.0f), DxwSharedContext::GetInstance().GetSolidBrush2D("Default2").Get());
+				pD2DDeviceContext->DrawTextW(fpsText, wcslen(fpsText), pDefaultTextFormat.Get(), textRect, DxwSharedContext::GetInstance().GetSolidBrush2D("dxwMagenta").Get());
+				pD2DDeviceContext->FillRoundedRectangle(D2D1::RoundedRect(D2D1::RectF(80, 80, 400, 500), 15.0f, 15.0f), DxwSharedContext::GetInstance().GetSolidBrush2D("dxwGreen").Get());
+
+				for (int i = 0; i < 50000; ++i)
+				{
+					D2D_DrawLine(0, 0 + i/5, 400, 0 + i/5, "dxwYellow");
+				}
+
 				D2D_EndDraw();
 
 				DX_Present(1);
@@ -640,8 +646,21 @@ void DxwWindow::CreateBrushResources()
 {
 	LOG_DEBUG("Creating brush resources");
 
-	CreateSolidBrush2D(0, 1.0f, 0, 1.0f, "Default");
-	CreateSolidBrush2D(1.0f, 1.0f, 1.0f, 0.3f, "Default2");
+	D2D_CreateSolidBrush(1.0, 1.0f, 1.0, 1.0f, "dxwDefault");
+
+	D2D_CreateSolidBrush(1.0f, 1.0f, 1.0f, 1.0f, "dxwWhite");
+	D2D_CreateSolidBrush(0.0f, 0.0f, 0.0f, 1.0f, "dxwBlack");
+	D2D_CreateSolidBrush(0.5f, 0.5f, 0.5f, 1.0f, "dxwGray");
+	D2D_CreateSolidBrush(0.25f, 0.25f, 0.25f, 1.0f, "dxwDarkGray");
+	D2D_CreateSolidBrush(0.75f, 0.75f, 0.75f, 1.0f, "dxwLightGray");
+	D2D_CreateSolidBrush(1.0f, 0.0f, 0.0f, 1.0f, "dxwRed");
+	D2D_CreateSolidBrush(0.0f, 1.0f, 0.0f, 1.0f, "dxwGreen");
+	D2D_CreateSolidBrush(0.0f, 0.0f, 1.0f, 1.0f, "dxwBlue");
+	D2D_CreateSolidBrush(1.0f, 1.0f, 0.0f, 1.0f, "dxwYellow");
+	D2D_CreateSolidBrush(1.0f, 0.5f, 0.0f, 1.0f, "dxwOrange");
+	D2D_CreateSolidBrush(1.0f, 0.0f, 1.0f, 1.0f, "dxwMagenta");
+
+	D2D_CreateSolidBrush(1.0f, 1.0f, 1.0f, 0.5f, "dxwWhiteAlpha");
 }
 
 void DxwWindow::CreateTextResources()
@@ -799,7 +818,7 @@ void DxwWindow::PrintSystemInfo()
 	LOG_INFO("\\--------------------------------------*");
 }
 
-void DxwWindow::CreateSolidBrush2D(float r, float g, float b, float a, std::string name)
+void DxwWindow::D2D_CreateSolidBrush(float r, float g, float b, float a, std::string name)
 {
 	ComPtr<ID2D1SolidColorBrush> brush{ nullptr };
 
@@ -808,7 +827,7 @@ void DxwWindow::CreateSolidBrush2D(float r, float g, float b, float a, std::stri
 		brush.GetAddressOf()
 	);
 
-	DxwSharedContext::GetInstance().AddSolidBrush2D(name, brush);
+	DxwSharedContext::GetInstance().RegisterSolidBrush2D(name, brush);
 }
 
 }

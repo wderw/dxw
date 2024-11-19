@@ -50,9 +50,10 @@ public:
 	void D3D_Draw(int, int);
 
 	void D2D_Clear();
-	void D2D_DrawLine(float, float, float, float);
+	void D2D_DrawLine(float, float, float, float, const std::string& brushName);
 	void D2D_BeginDraw();
 	void D2D_EndDraw();
+	void D2D_CreateSolidBrush(float r, float g, float b, float a, std::string name);
 	void DX_Present(int);
 	void DemoRT();
 	void DemoNRT(float);
@@ -70,7 +71,6 @@ private:
 	void PrepareConstantTransformBuffer();
 	void PrintAdapterInfo();
 	void PrintSystemInfo();
-	void CreateSolidBrush2D(float r, float g, float b, float a, std::string name);
 
 	int id{-1};
 	static int instanceCounter;

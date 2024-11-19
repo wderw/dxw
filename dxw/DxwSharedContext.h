@@ -17,7 +17,7 @@ public:
     int GetTargetId();
     std::shared_ptr<DxwWindow> GetWindowByID(int id);
     std::shared_ptr<DxwWindow> GetCurrentWindow();
-    void AddSolidBrush2D(const std::string& name, ComPtr<ID2D1Brush> brush);
+    void RegisterSolidBrush2D(const std::string& name, ComPtr<ID2D1Brush> brush);
     ComPtr<ID2D1Brush> GetSolidBrush2D(const std::string& name);
 
     const char* GetVertexShaderSource();
