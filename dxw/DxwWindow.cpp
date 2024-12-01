@@ -311,10 +311,27 @@ void DxwWindow::DemoNRT(float fi)
 	D2D_EndDraw();
 }
 
+void CalculateFPS(std::chrono::time_point<std::chrono::steady_clock>& lastFrameTime, unsigned int& deltaMicroseconds, float& fps)
+{
+	auto now = std::chrono::steady_clock::now();
+	deltaMicroseconds = std::chrono::duration_cast<std::chrono::microseconds>(now - lastFrameTime).count();
+
+	if (deltaMicroseconds > 0)
+	{
+		fps = 1000000.0f / static_cast<float>(deltaMicroseconds);
+	}
+
+	lastFrameTime = now;
+}
+
 void DxwWindow::DemoRT()
 {
 	std::thread([&]()
 		{
+			std::chrono::time_point<std::chrono::steady_clock> lastFrameTime;
+			float fps{ 0 };
+			unsigned deltaMicroseconds{ 0 };
+
 			static std::vector<Vertex> lineVerts = Utils::GenerateLines(windowWidth, windowHeight, 1000000);
 			std::vector<Vertex> tetrahedronVerts = Utils::GenerateTetrahedron();
 
@@ -384,13 +401,30 @@ void DxwWindow::DemoRT()
 
 
 				D2D_BeginDraw();
-				pD2DDeviceContext->DrawTextW(fpsText, wcslen(fpsText), pDefaultTextFormat.Get(), textRect, DxwSharedContext::GetInstance().GetSolidBrush2D("dxwMagenta").Get());
+				//pD2DDeviceContext->DrawTextW(fpsText, wcslen(fpsText), pDefaultTextFormat.Get(), textRect, DxwSharedContext::GetInstance().GetSolidBrush2D("dxwMagenta").Get());
 				//pD2DDeviceContext->FillRoundedRectangle(D2D1::RoundedRect(D2D1::RectF(80, 80, 400, 500), 15.0f, 15.0f), DxwSharedContext::GetInstance().GetSolidBrush2D("dxwGreen").Get());
 
 				//for (int i = 0; i < 50000; ++i)
 				//{
 				//	D2D_DrawLine(0, 0 + i/5, 400, 0 + i/5, "dxwYellow");
 				//}
+
+				CalculateFPS(lastFrameTime, deltaMicroseconds, fps);
+
+				wchar_t fpsText[64];
+				swprintf_s(fpsText, 64, L"FPS: %.2f\n[us]: %u", fps, deltaMicroseconds);
+
+				D2D1_SIZE_F renderTargetSize = pD2DDeviceContext->GetSize();
+				D2D1_RECT_F textRect = D2D1::RectF(0, 0, 250, 50);
+
+				pD2DDeviceContext->DrawTextW(
+					fpsText,
+					wcslen(fpsText),
+					pDefaultTextFormat.Get(),
+					textRect,
+					DxwSharedContext::GetInstance().GetSolidBrush2D("dxwGreen").Get()
+				);
+
 
 				D2D_EndDraw();
 
