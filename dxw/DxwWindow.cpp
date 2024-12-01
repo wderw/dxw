@@ -275,7 +275,7 @@ void DxwWindow::DemoNRT(float fi)
 	D3D_Clear(0.2f, 0.2f, 0.2f, 1.0f);
 
 	D2D_BeginDraw();
-	pD2DDeviceContext->FillRoundedRectangle(D2D1::RoundedRect(D2D1::RectF(250, 250, 600, 400), 15.0f, 15.0f), DxwSharedContext::GetInstance().GetSolidBrush2D("Default2").Get());
+	pD2DDeviceContext->FillRoundedRectangle(D2D1::RoundedRect(D2D1::RectF(250, 250, 600, 400), 15.0f, 15.0f), DxwSharedContext::GetInstance().GetSolidBrush2D("dxwWhite").Get());
 	D2D_EndDraw();
 
 	pD3DDeviceContext->ClearDepthStencilView(pDepthStencilView.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
@@ -298,16 +298,16 @@ void DxwWindow::DemoNRT(float fi)
 	D3D_SetTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
 	D3D_Draw(12, 0);
 
-	//pD3DDeviceContext->IASetVertexBuffers(0, 1, pLineVertexBuffer.GetAddressOf(), &stride, &offset);
-	//D3D_SetTopology(D3D11_PRIMITIVE_TOPOLOGY_LINESTRIP);
-	//D3D_ResetTransformMatrix();
-	//D3D_ResetProjectionMatrix();
-	//D3D_UpdateMatrixSubresources();
-	//D3D_Draw(1000000, 0);
+	pD3DDeviceContext->IASetVertexBuffers(0, 1, pLineVertexBuffer.GetAddressOf(), &stride, &offset);
+	D3D_SetTopology(D3D11_PRIMITIVE_TOPOLOGY_LINESTRIP);
+	D3D_ResetTransformMatrix();
+	D3D_ResetProjectionMatrix();
+	D3D_UpdateMatrixSubresources();
+	D3D_Draw(1000000, 0);
 
 	D2D_BeginDraw();
-	pD2DDeviceContext->DrawTextW(fpsText, wcslen(fpsText), pDefaultTextFormat.Get(), textRect, DxwSharedContext::GetInstance().GetSolidBrush2D("Default").Get());
-	pD2DDeviceContext->FillRoundedRectangle(D2D1::RoundedRect(D2D1::RectF(80, 80, 400, 500), 15.0f, 15.0f), DxwSharedContext::GetInstance().GetSolidBrush2D("Default2").Get());
+	pD2DDeviceContext->DrawTextW(fpsText, wcslen(fpsText), pDefaultTextFormat.Get(), textRect, DxwSharedContext::GetInstance().GetSolidBrush2D("dxwGreen").Get());
+	pD2DDeviceContext->FillRoundedRectangle(D2D1::RoundedRect(D2D1::RectF(80, 80, 400, 500), 15.0f, 15.0f), DxwSharedContext::GetInstance().GetSolidBrush2D("dxwRed").Get());
 	D2D_EndDraw();
 }
 
@@ -315,13 +315,21 @@ void DxwWindow::DemoRT()
 {
 	std::thread([&]()
 		{
+			static std::vector<Vertex> lineVerts = Utils::GenerateLines(windowWidth, windowHeight, 1000000);
+			std::vector<Vertex> tetrahedronVerts = Utils::GenerateTetrahedron();
+
+			D3D11_BUFFER_DESC linesVertexBufferDesc = Utils::VertexBufferDesc(lineVerts);
+			D3D11_SUBRESOURCE_DATA lineInitData = { lineVerts.data() };
+			if (pLineVertexBuffer == nullptr)
+			{
+				pD3DDevice->CreateBuffer(&linesVertexBufferDesc, &lineInitData, pLineVertexBuffer.GetAddressOf());
+			}
+
 			float fi = 0;
 
 			wchar_t fpsText[80] = L"TEST test za¿ó³æ gêœl¹ jaŸñ The quick brown fox jumps over the lazy dog";
 			D2D1_RECT_F textRect = D2D1::RectF(0, 0, 250, 50);
 
-			std::vector<Vertex> lineVerts = Utils::GenerateLines(windowWidth, windowHeight, 1000000);
-			std::vector<Vertex> tetrahedronVerts = Utils::GenerateTetrahedron();
 
 			D3D11_BUFFER_DESC vertexBufferDesc = Utils::VertexBufferDesc(tetrahedronVerts);
 			D3D11_SUBRESOURCE_DATA initData = { tetrahedronVerts.data() };
@@ -346,6 +354,7 @@ void DxwWindow::DemoRT()
 
 				pD3DDeviceContext->ClearDepthStencilView(pDepthStencilView.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
 
+				pD3DDeviceContext->IASetVertexBuffers(0, 1, pVertexBuffer.GetAddressOf(), &stride, &offset);
 				D3D_SetPerspectiveProjectionMatrix(DirectX::XM_PIDIV4, static_cast<float>(windowWidth) / static_cast<float>(windowHeight), 0.01f, 100.0f);
 				D3D_SetTranslation(0, 0, 1);
 				D3D_SetScale(1.5f, 1.5f, 1.5f);
@@ -364,14 +373,24 @@ void DxwWindow::DemoRT()
 				D3D_SetTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
 				D3D_Draw(12, 0);
 
+
+
+				pD3DDeviceContext->IASetVertexBuffers(0, 1, pLineVertexBuffer.GetAddressOf(), &stride, &offset);
+				D3D_SetTopology(D3D11_PRIMITIVE_TOPOLOGY_LINESTRIP);
+				D3D_ResetTransformMatrix();
+				D3D_ResetProjectionMatrix();
+				D3D_UpdateMatrixSubresources();
+				D3D_Draw(100, 0);
+
+
 				D2D_BeginDraw();
 				pD2DDeviceContext->DrawTextW(fpsText, wcslen(fpsText), pDefaultTextFormat.Get(), textRect, DxwSharedContext::GetInstance().GetSolidBrush2D("dxwMagenta").Get());
-				pD2DDeviceContext->FillRoundedRectangle(D2D1::RoundedRect(D2D1::RectF(80, 80, 400, 500), 15.0f, 15.0f), DxwSharedContext::GetInstance().GetSolidBrush2D("dxwGreen").Get());
+				//pD2DDeviceContext->FillRoundedRectangle(D2D1::RoundedRect(D2D1::RectF(80, 80, 400, 500), 15.0f, 15.0f), DxwSharedContext::GetInstance().GetSolidBrush2D("dxwGreen").Get());
 
-				for (int i = 0; i < 50000; ++i)
-				{
-					D2D_DrawLine(0, 0 + i/5, 400, 0 + i/5, "dxwYellow");
-				}
+				//for (int i = 0; i < 50000; ++i)
+				//{
+				//	D2D_DrawLine(0, 0 + i/5, 400, 0 + i/5, "dxwYellow");
+				//}
 
 				D2D_EndDraw();
 
