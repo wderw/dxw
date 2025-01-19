@@ -17,21 +17,25 @@ typedef void(__stdcall* DXW_D2D_ClearFunc)();
 typedef void(__stdcall* DXW_PresentFunc)(int);
 typedef bool(__stdcall* DXW_IsInitializedFunc)();
 typedef void(__stdcall* DXW_DemoRTFunc)();
+typedef void(__stdcall* DXW_DemoLinesFunc)(int);
+typedef void(__stdcall* DXW_Demo3DFunc)();
 typedef void(__stdcall* DXW_DemoNRTFunc)(float);
 typedef void(__stdcall* DXW_ResizeWindowFunc)(unsigned int, unsigned int);
 typedef void(__stdcall* DXW_ReleaseDxwResourcesFunc)();
 
-DXW_SetTargetWindowFunc   DXW_SetTargetWindow   = nullptr;
-DXW_InitWindowFunc        DXW_InitWindow        = nullptr;
-DXW_D3D_ClearFunc         DXW_D3D_Clear         = nullptr;
-DXW_D2D_BeginDrawFunc     DXW_D2D_BeginDraw     = nullptr;
-DXW_D2D_EndDrawFunc       DXW_D2D_EndDraw       = nullptr;
-DXW_D2D_ClearFunc         DXW_D2D_Clear         = nullptr;
-DXW_PresentFunc           DXW_Present           = nullptr;
-DXW_IsInitializedFunc     DXW_IsInitialized     = nullptr;
-DXW_DemoRTFunc            DXW_DemoRT            = nullptr;
-DXW_DemoNRTFunc           DXW_DemoNRT           = nullptr;
-DXW_ResizeWindowFunc      DXW_ResizeWindow      = nullptr;
+DXW_SetTargetWindowFunc     DXW_SetTargetWindow     = nullptr;
+DXW_InitWindowFunc          DXW_InitWindow          = nullptr;
+DXW_D3D_ClearFunc           DXW_D3D_Clear           = nullptr;
+DXW_D2D_BeginDrawFunc       DXW_D2D_BeginDraw       = nullptr;
+DXW_D2D_EndDrawFunc         DXW_D2D_EndDraw         = nullptr;
+DXW_D2D_ClearFunc           DXW_D2D_Clear           = nullptr;
+DXW_PresentFunc             DXW_Present             = nullptr;
+DXW_IsInitializedFunc       DXW_IsInitialized       = nullptr;
+DXW_DemoRTFunc              DXW_DemoRT              = nullptr;
+DXW_DemoNRTFunc             DXW_DemoNRT             = nullptr;
+DXW_DemoLinesFunc           DXW_DemoLines           = nullptr;
+DXW_Demo3DFunc              DXW_Demo3D              = nullptr;
+DXW_ResizeWindowFunc        DXW_ResizeWindow        = nullptr;
 DXW_ReleaseDxwResourcesFunc DXW_ReleaseDxwResources = nullptr;
 
 const std::wstring libraryName = L"dxw.dll";
@@ -173,6 +177,24 @@ bool LoadWrapperDll()
             _stprintf_s(errorMsg, _T("DXW_ReleaseDxwResources GetProcAddress failed. Error code: %lu"), error);
             MessageBox(nullptr, errorMsg, _T("Error"), MB_OK);
         }
+
+        DXW_DemoLines = (DXW_DemoLinesFunc)GetProcAddress(hDLL, "DXW_DemoLines");
+        if (!DXW_DemoLines)
+        {
+            DWORD error = GetLastError();
+            TCHAR errorMsg[256];
+            _stprintf_s(errorMsg, _T("DXW_DemoLines GetProcAddress failed. Error code: %lu"), error);
+            MessageBox(nullptr, errorMsg, _T("Error"), MB_OK);
+        }
+
+        DXW_Demo3D = (DXW_Demo3DFunc)GetProcAddress(hDLL, "DXW_Demo3D");
+        if (!DXW_Demo3D)
+        {
+            DWORD error = GetLastError();
+            TCHAR errorMsg[256];
+            _stprintf_s(errorMsg, _T("DXW_Demo3D GetProcAddress failed. Error code: %lu"), error);
+            MessageBox(nullptr, errorMsg, _T("Error"), MB_OK);
+        }
     }
 
     std::cout << "Wrapper loaded successfully!" << std::endl;
@@ -269,9 +291,12 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     std::cout << "Window allocated id was: " << id << std::endl;
 
     DXW_SetTargetWindow(id); // redundant but fine - target window is always the last added window
-    DXW_DemoRT();
+    //DXW_DemoRT();
     //DXW_DemoNRT(0);
     //DXW_Present(1);
+
+    DXW_DemoLines(1000000);
+    //DXW_Demo3D();
 
     MSG msg = {};
     while (GetMessage(&msg, nullptr, 0, 0))

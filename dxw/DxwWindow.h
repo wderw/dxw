@@ -57,6 +57,8 @@ public:
 	void DX_Present(int);
 	void DemoRT();
 	void DemoNRT(float);
+	void DemoLines(int);
+	void Demo3D();
 	void ResizeWindow(unsigned int, unsigned int);
 
 	bool operator==(const DxwWindow& other) const

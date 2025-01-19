@@ -161,6 +161,19 @@ void DxwWindow::ResizeWindow(unsigned int w, unsigned int h)
 	SetD3DViewport(w, h);
 }
 
+void CalculateFPS(std::chrono::time_point<std::chrono::steady_clock>& lastFrameTime, unsigned int& deltaMicroseconds, float& fps)
+{
+	auto now = std::chrono::steady_clock::now();
+	deltaMicroseconds = std::chrono::duration_cast<std::chrono::microseconds>(now - lastFrameTime).count();
+
+	if (deltaMicroseconds > 0)
+	{
+		fps = 1000000.0f / static_cast<float>(deltaMicroseconds);
+	}
+
+	lastFrameTime = now;
+}
+
 void DxwWindow::ResizeD3DSwapChain(UINT width, UINT height)
 {
 	LOG_DEBUG("Requested new swap chain width: {} height: {}", width, height);
@@ -311,17 +324,72 @@ void DxwWindow::DemoNRT(float fi)
 	D2D_EndDraw();
 }
 
-void CalculateFPS(std::chrono::time_point<std::chrono::steady_clock>& lastFrameTime, unsigned int& deltaMicroseconds, float& fps)
+void DxwWindow::DemoLines(int lineCount)
 {
-	auto now = std::chrono::steady_clock::now();
-	deltaMicroseconds = std::chrono::duration_cast<std::chrono::microseconds>(now - lastFrameTime).count();
+	std::thread([&, lineCount]()
+		{
+			std::chrono::time_point<std::chrono::steady_clock> lastFrameTime;
+			float fps{ 0 };
+			unsigned deltaMicroseconds{ 0 };
 
-	if (deltaMicroseconds > 0)
-	{
-		fps = 1000000.0f / static_cast<float>(deltaMicroseconds);
-	}
+			static std::vector<Vertex> lineVerts = Utils::GenerateLines(windowWidth, windowHeight, lineCount);
+			std::vector<Vertex> tetrahedronVerts = Utils::GenerateTetrahedron();
 
-	lastFrameTime = now;
+			D3D11_BUFFER_DESC linesVertexBufferDesc = Utils::VertexBufferDesc(lineVerts);
+			D3D11_SUBRESOURCE_DATA lineInitData = { lineVerts.data() };
+			if (pLineVertexBuffer == nullptr)
+			{
+				pD3DDevice->CreateBuffer(&linesVertexBufferDesc, &lineInitData, pLineVertexBuffer.GetAddressOf());
+			}
+
+			float fi = 0;
+
+			UINT stride = sizeof(Vertex);
+			UINT offset = 0;
+
+			pD3DDeviceContext->VSSetShader(pVertexShader.Get(), nullptr, 0);
+			pD3DDeviceContext->PSSetShader(pPixelShader.Get(), nullptr, 0);
+			pD3DDeviceContext->IASetInputLayout(pInputLayout.Get());
+			pD3DDeviceContext->IASetVertexBuffers(0, 1, pLineVertexBuffer.GetAddressOf(), &stride, &offset);
+			D3D_SetTopology(D3D11_PRIMITIVE_TOPOLOGY_LINESTRIP);
+
+			D3D_ResetTransformMatrix();
+			D3D_ResetProjectionMatrix();
+			D3D_UpdateMatrixSubresources();
+
+			while (true)
+			{
+				fi += 1.0f;
+				D3D_Clear(0.2f, 0.2f, 0.2f, 1.0f);
+				pD3DDeviceContext->ClearDepthStencilView(pDepthStencilView.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
+
+				D3D_Draw(lineCount, 0);
+
+				D2D_BeginDraw();
+				CalculateFPS(lastFrameTime, deltaMicroseconds, fps);
+
+				wchar_t fpsText[64];
+				swprintf_s(fpsText, 64, L"FPS: %.2f\n[us]: %u", fps, deltaMicroseconds);
+
+				D2D1_SIZE_F renderTargetSize = pD2DDeviceContext->GetSize();
+				D2D1_RECT_F textRect = D2D1::RectF(0, 0, 250, 50);
+
+				pD2DDeviceContext->DrawTextW(
+					fpsText,
+					wcslen(fpsText),
+					pDefaultTextFormat.Get(),
+					textRect,
+					DxwSharedContext::GetInstance().GetSolidBrush2D("dxwGreen").Get()
+				);
+
+				D2D_EndDraw();
+				DX_Present(1);
+			}
+		}).detach();
+}
+
+void DxwWindow::Demo3D()
+{
 }
 
 void DxwWindow::DemoRT()
@@ -390,8 +458,6 @@ void DxwWindow::DemoRT()
 				D3D_SetTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
 				D3D_Draw(12, 0);
 
-
-
 				pD3DDeviceContext->IASetVertexBuffers(0, 1, pLineVertexBuffer.GetAddressOf(), &stride, &offset);
 				D3D_SetTopology(D3D11_PRIMITIVE_TOPOLOGY_LINESTRIP);
 				D3D_ResetTransformMatrix();
@@ -401,14 +467,6 @@ void DxwWindow::DemoRT()
 
 
 				D2D_BeginDraw();
-				//pD2DDeviceContext->DrawTextW(fpsText, wcslen(fpsText), pDefaultTextFormat.Get(), textRect, DxwSharedContext::GetInstance().GetSolidBrush2D("dxwMagenta").Get());
-				//pD2DDeviceContext->FillRoundedRectangle(D2D1::RoundedRect(D2D1::RectF(80, 80, 400, 500), 15.0f, 15.0f), DxwSharedContext::GetInstance().GetSolidBrush2D("dxwGreen").Get());
-
-				//for (int i = 0; i < 50000; ++i)
-				//{
-				//	D2D_DrawLine(0, 0 + i/5, 400, 0 + i/5, "dxwYellow");
-				//}
-
 				CalculateFPS(lastFrameTime, deltaMicroseconds, fps);
 
 				wchar_t fpsText[64];

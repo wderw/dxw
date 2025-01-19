@@ -46,6 +46,18 @@ void DXW_DemoNRT(float fi)
 	DxwSharedContext::GetInstance().GetCurrentWindow()->DemoNRT(fi);
 }
 
+void DXW_DemoLines(int n)
+{
+	LOG_TRACE("DXW_DemoLines called");
+	DxwSharedContext::GetInstance().GetCurrentWindow()->DemoLines(n);
+}
+
+void DXW_Demo3D()
+{
+	LOG_TRACE("DXW_Demo3D called");
+	DxwSharedContext::GetInstance().GetCurrentWindow()->Demo3D();
+}
+
 void DXW_Present(int vsync = 1)
 {
 	LOG_TRACE("DXW_Present called");
