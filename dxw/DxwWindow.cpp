@@ -103,7 +103,7 @@ void DxwWindow::D2D_Clear()
 
 void DxwWindow::D2D_DrawLine(float x0, float y0, float x1, float y1, const std::string& brushName)
 {
-	pD2DDeviceContext->DrawLine(D2D1::Point2F(x0, y0), D2D1::Point2F(x1, y1), DxwSharedContext::GetInstance().GetSolidBrush2D(brushName).Get());
+	pD2DDeviceContext->DrawLine(D2D1::Point2F(x0, y0), D2D1::Point2F(x1, y1), pDefaultBrush.Get());
 }
 
 void DxwWindow::D2D_BeginDraw()
@@ -288,7 +288,7 @@ void DxwWindow::DemoNRT(float fi)
 	D3D_Clear(0.2f, 0.2f, 0.2f, 1.0f);
 
 	D2D_BeginDraw();
-	pD2DDeviceContext->FillRoundedRectangle(D2D1::RoundedRect(D2D1::RectF(250, 250, 600, 400), 15.0f, 15.0f), DxwSharedContext::GetInstance().GetSolidBrush2D("dxwWhite").Get());
+	pD2DDeviceContext->FillRoundedRectangle(D2D1::RoundedRect(D2D1::RectF(250, 250, 600, 400), 15.0f, 15.0f), pDefaultBrush2.Get());
 	D2D_EndDraw();
 
 	pD3DDeviceContext->ClearDepthStencilView(pDepthStencilView.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
@@ -319,8 +319,8 @@ void DxwWindow::DemoNRT(float fi)
 	D3D_Draw(1000000, 0);
 
 	D2D_BeginDraw();
-	pD2DDeviceContext->DrawTextW(fpsText, wcslen(fpsText), pDefaultTextFormat.Get(), textRect, DxwSharedContext::GetInstance().GetSolidBrush2D("dxwGreen").Get());
-	pD2DDeviceContext->FillRoundedRectangle(D2D1::RoundedRect(D2D1::RectF(80, 80, 400, 500), 15.0f, 15.0f), DxwSharedContext::GetInstance().GetSolidBrush2D("dxwRed").Get());
+	pD2DDeviceContext->DrawTextW(fpsText, wcslen(fpsText), pDefaultTextFormat.Get(), textRect, pDefaultBrush.Get());
+	pD2DDeviceContext->FillRoundedRectangle(D2D1::RoundedRect(D2D1::RectF(80, 80, 400, 500), 15.0f, 15.0f), pDefaultBrush2.Get());
 	D2D_EndDraw();
 }
 
@@ -379,7 +379,7 @@ void DxwWindow::DemoLines(int lineCount)
 					wcslen(fpsText),
 					pDefaultTextFormat.Get(),
 					textRect,
-					DxwSharedContext::GetInstance().GetSolidBrush2D("dxwGreen").Get()
+					pDefaultBrush.Get()
 				);
 
 				D2D_EndDraw();
@@ -434,7 +434,7 @@ void DxwWindow::DemoRT()
 				D3D_Clear(0.2f, 0.2f, 0.2f, 1.0f);
 
 				D2D_BeginDraw();
-				pD2DDeviceContext->FillRoundedRectangle(D2D1::RoundedRect(D2D1::RectF(250, 250, 600, 400), 15.0f, 15.0f), DxwSharedContext::GetInstance().GetSolidBrush2D("dxwOrange").Get());
+				pD2DDeviceContext->FillRoundedRectangle(D2D1::RoundedRect(D2D1::RectF(250, 250, 600, 400), 15.0f, 15.0f), pDefaultBrush.Get());
 				D2D_EndDraw();
 
 				pD3DDeviceContext->ClearDepthStencilView(pDepthStencilView.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
@@ -480,7 +480,7 @@ void DxwWindow::DemoRT()
 					wcslen(fpsText),
 					pDefaultTextFormat.Get(),
 					textRect,
-					DxwSharedContext::GetInstance().GetSolidBrush2D("dxwGreen").Get()
+					pDefaultBrush.Get()
 				);
 
 
@@ -755,23 +755,15 @@ void DxwWindow::InitDirect2D()
 
 void DxwWindow::CreateBrushResources()
 {
-	LOG_DEBUG("Creating brush resources");
+	pD2DDeviceContext->CreateSolidColorBrush(
+		D2D1::ColorF(D2D1::ColorF(0, 1, 0, 1.0f)),
+		pDefaultBrush.GetAddressOf()
+	);
 
-	D2D_CreateSolidBrush(1.0, 1.0f, 1.0, 1.0f, "dxwDefault");
-
-	D2D_CreateSolidBrush(1.0f, 1.0f, 1.0f, 1.0f, "dxwWhite");
-	D2D_CreateSolidBrush(0.0f, 0.0f, 0.0f, 1.0f, "dxwBlack");
-	D2D_CreateSolidBrush(0.5f, 0.5f, 0.5f, 1.0f, "dxwGray");
-	D2D_CreateSolidBrush(0.25f, 0.25f, 0.25f, 1.0f, "dxwDarkGray");
-	D2D_CreateSolidBrush(0.75f, 0.75f, 0.75f, 1.0f, "dxwLightGray");
-	D2D_CreateSolidBrush(1.0f, 0.0f, 0.0f, 1.0f, "dxwRed");
-	D2D_CreateSolidBrush(0.0f, 1.0f, 0.0f, 1.0f, "dxwGreen");
-	D2D_CreateSolidBrush(0.0f, 0.0f, 1.0f, 1.0f, "dxwBlue");
-	D2D_CreateSolidBrush(1.0f, 1.0f, 0.0f, 1.0f, "dxwYellow");
-	D2D_CreateSolidBrush(1.0f, 0.5f, 0.0f, 1.0f, "dxwOrange");
-	D2D_CreateSolidBrush(1.0f, 0.0f, 1.0f, 1.0f, "dxwMagenta");
-
-	D2D_CreateSolidBrush(1.0f, 1.0f, 1.0f, 0.5f, "dxwWhiteAlpha");
+	pD2DDeviceContext->CreateSolidColorBrush(
+		D2D1::ColorF(D2D1::ColorF(1, 1, 1, 0.3f)),
+		pDefaultBrush2.GetAddressOf()
+	);
 }
 
 void DxwWindow::CreateTextResources()
@@ -818,8 +810,8 @@ void DxwWindow::InitDirectX(HWND hWnd)
 	LOG_DEBUG("DirectX initialization started");
 	InitDirect3D(hWnd);
 	InitDirect2D();
-	CreateTextResources();
 	CreateBrushResources();
+	CreateTextResources();
 	isDirectXInitialized = true;
 
 	PrepareConstantTransformBuffer();
@@ -927,18 +919,6 @@ void DxwWindow::PrintSystemInfo()
 		LOG_WARN("Failed to retrieve OS version information!");
 	}
 	LOG_INFO("\\--------------------------------------*");
-}
-
-void DxwWindow::D2D_CreateSolidBrush(float r, float g, float b, float a, std::string name)
-{
-	ComPtr<ID2D1SolidColorBrush> brush{ nullptr };
-
-	pD2DDeviceContext->CreateSolidColorBrush(
-		D2D1::ColorF(D2D1::ColorF(r, g, b, a)),
-		brush.GetAddressOf()
-	);
-
-	DxwSharedContext::GetInstance().RegisterSolidBrush2D(name, brush);
 }
 
 }

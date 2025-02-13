@@ -17,7 +17,6 @@ extern "C" __declspec(dllexport) void DXW_D2D_BeginDraw();
 extern "C" __declspec(dllexport) void DXW_D2D_EndDraw();
 extern "C" __declspec(dllexport) void DXW_D2D_Clear();
 extern "C" __declspec(dllexport) void DXW_D2D_DrawLine(float, float, float, float, const char*);
-extern "C" __declspec(dllexport) void DXW_D2D_CreateSolidBrush(float, float, float, float, const char*);
 extern "C" __declspec(dllexport) void DXW_Present(int);
 extern "C" __declspec(dllexport) bool DXW_IsInitialized();
 extern "C" __declspec(dllexport) void DXW_ReleaseDxwResources();

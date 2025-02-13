@@ -7,6 +7,7 @@ HINSTANCE hInst;
 HWND hWndMain;
 HINSTANCE hDLL;
 HWND g_hDrawingPanel = nullptr;
+HWND g_hDrawingPanel2 = nullptr;
 
 typedef int(__stdcall*  DXW_InitWindowFunc)(HWND);
 typedef void(__stdcall* DXW_SetTargetWindowFunc)(int);
@@ -39,7 +40,7 @@ DXW_ResizeWindowFunc        DXW_ResizeWindow        = nullptr;
 DXW_ReleaseDxwResourcesFunc DXW_ReleaseDxwResources = nullptr;
 
 const std::wstring libraryName = L"dxw.dll";
-void CreateDrawingPanel(HWND parentHwnd);
+void CreateDrawingPanels(HWND parentHwnd);
 
 void SetupConsole()
 {
@@ -49,12 +50,18 @@ void SetupConsole()
     freopen_s(&fp, "CONOUT$", "w", stderr);
 }
 
-void CreateDrawingPanel(HWND parentHwnd)
+void CreateDrawingPanels(HWND parentHwnd)
 {
     // Create a child window (panel) for drawing
     g_hDrawingPanel = CreateWindowEx(
         0, L"STATIC", L"", WS_CHILD | WS_VISIBLE,
-        80, 80, 800, 600, parentHwnd, nullptr, nullptr, nullptr
+        10, 10, 800, 300, parentHwnd, nullptr, nullptr, nullptr
+    );
+
+    // Create a child window (panel) for drawing
+    g_hDrawingPanel2 = CreateWindowEx(
+        0, L"STATIC", L"", WS_CHILD | WS_VISIBLE,
+        10, 350, 800, 300, parentHwnd, nullptr, nullptr, nullptr
     );
 }
 
@@ -232,7 +239,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     }
     case WM_CREATE:
     {
-        CreateDrawingPanel(hWnd);
+        CreateDrawingPanels(hWnd);
         CreateWindow(
             L"BUTTON",
             L"Start Drawing",
@@ -286,8 +293,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     ShowWindow(hWndMain, nCmdShow);
     UpdateWindow(hWndMain);
 
-    //int id = DXW_InitWindow(g_hDrawingPanel);
-    int id = DXW_InitWindow(hWndMain);
+    int id = DXW_InitWindow(g_hDrawingPanel);
+    int id2 = DXW_InitWindow(g_hDrawingPanel2);
+    //int id = DXW_InitWindow(hWndMain);
     std::cout << "Window allocated id was: " << id << std::endl;
 
     DXW_SetTargetWindow(id); // redundant but fine - target window is always the last added window
@@ -295,6 +303,10 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     //DXW_DemoNRT(0);
     //DXW_Present(1);
 
+
+    DXW_DemoLines(1000000);
+
+    DXW_SetTargetWindow(id2);
     DXW_DemoLines(1000000);
     //DXW_Demo3D();
 

@@ -53,7 +53,6 @@ public:
 	void D2D_DrawLine(float, float, float, float, const std::string& brushName);
 	void D2D_BeginDraw();
 	void D2D_EndDraw();
-	void D2D_CreateSolidBrush(float r, float g, float b, float a, std::string name);
 	void DX_Present(int);
 	void DemoRT();
 	void DemoNRT(float);
@@ -102,10 +101,13 @@ private:
 	ComPtr<ID3D11PixelShader> pPixelShader{ nullptr };
 	ComPtr<ID3D11Texture2D> pDepthStencilBuffer{ nullptr };
 	ComPtr<ID3D11DepthStencilView> pDepthStencilView{ nullptr };
+	ComPtr<ID2D1SolidColorBrush> pDefaultBrush{ nullptr };
+	ComPtr<ID2D1SolidColorBrush> pDefaultBrush2{ nullptr };
 	ComPtr<ID3D11Buffer> pTransformBuffer{ nullptr };
 	ComPtr<IDXGISurface> pSurface{ nullptr };
 
 	ComPtr<ID3D11Buffer> pLineVertexBuffer{ nullptr };
+
 
 	TransformBuffer transformBufferData{ DirectX::XMMatrixIdentity(), DirectX::XMMatrixIdentity() };
 	D3D11_BUFFER_DESC transformBufferDesc{};

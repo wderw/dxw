@@ -12,7 +12,6 @@ DxwSharedContext& DxwSharedContext::GetInstance()
 void DxwSharedContext::ReleaseDxwResources()
 {
     windows.clear();
-    brushes2d.clear();
 }
 
 void DxwSharedContext::RegisterWindow(std::shared_ptr<DxwWindow> window)
@@ -25,7 +24,7 @@ void DxwSharedContext::RegisterWindow(std::shared_ptr<DxwWindow> window)
     }
     else
     {
-        LOG_ERROR("DxwWindow with id {} was already registered!", id);
+        LOG_WARN("Window with id: {} was not found!", id);
     }
     SetTargetId(id);
 }
@@ -60,31 +59,6 @@ std::shared_ptr<DxwWindow> DxwSharedContext::GetWindowByID(int id)
 std::shared_ptr<DxwWindow> DxwSharedContext::GetCurrentWindow()
 {
     return GetWindowByID(GetTargetId());
-}
-
-void DxwSharedContext::RegisterSolidBrush2D(const std::string& name, ComPtr<ID2D1Brush> brush)
-{
-    brushes2d.insert({ name, brush });
-}
-
-ComPtr<ID2D1Brush> DxwSharedContext::GetSolidBrush2D(const std::string& name)
-{
-    auto it = brushes2d.find(name);
-    if (it != brushes2d.end())
-    {
-        return it->second;
-    }
-
-    const std::string& defaultBrushName{ "Default2" };
-    LOG_WARN("SolidBrush2D with name: {} was not found! Attempting to use default: {} brush", name, defaultBrushName);
-    auto itd = brushes2d.find(defaultBrushName);
-    if (itd != brushes2d.end())
-    {
-        return it->second;
-    }
-
-    LOG_ERROR("Could not find default: {} brush!", defaultBrushName);
-    return nullptr;
 }
 
 const char* DxwSharedContext::GetVertexShaderSource()
