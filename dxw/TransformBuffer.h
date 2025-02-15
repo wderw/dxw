@@ -3,7 +3,6 @@
 #include <DirectXMath.h>
 
 namespace dxw
-
 {
 
 struct TransformBuffer
@@ -11,5 +10,4 @@ struct TransformBuffer
     DirectX::XMMATRIX transform;
     DirectX::XMMATRIX projection;
 };
-
 }

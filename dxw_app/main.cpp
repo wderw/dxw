@@ -52,16 +52,14 @@ void SetupConsole()
 
 void CreateDrawingPanels(HWND parentHwnd)
 {
-    // Create a child window (panel) for drawing
     g_hDrawingPanel = CreateWindowEx(
         0, L"STATIC", L"", WS_CHILD | WS_VISIBLE,
         10, 10, 800, 300, parentHwnd, nullptr, nullptr, nullptr
     );
 
-    // Create a child window (panel) for drawing
     g_hDrawingPanel2 = CreateWindowEx(
         0, L"STATIC", L"", WS_CHILD | WS_VISIBLE,
-        10, 350, 800, 300, parentHwnd, nullptr, nullptr, nullptr
+        10, 320, 800, 370, parentHwnd, nullptr, nullptr, nullptr
     );
 }
 
@@ -78,130 +76,19 @@ bool LoadWrapperDll()
     if (hDLL)
     {
         DXW_InitWindow = (DXW_InitWindowFunc)GetProcAddress(hDLL, "DXW_InitWindow");
-        if (!DXW_InitWindow)
-        {
-            DWORD error = GetLastError();
-            TCHAR errorMsg[256];
-            _stprintf_s(errorMsg, _T("DXW_InitWindow GetProcAddress failed. Error code: %lu"), error);
-            MessageBox(nullptr, errorMsg, _T("Error"), MB_OK);
-        }
-
         DXW_D3D_Clear = (DXW_D3D_ClearFunc)GetProcAddress(hDLL, "DXW_D3D_Clear");
-        if (!DXW_D3D_Clear)
-        {
-            DWORD error = GetLastError();
-            TCHAR errorMsg[256];
-            _stprintf_s(errorMsg, _T("DXW_D3D_Clear GetProcAddress failed. Error code: %lu"), error);
-            MessageBox(nullptr, errorMsg, _T("Error"), MB_OK);
-        }
-
         DXW_D2D_Clear = (DXW_D2D_ClearFunc)GetProcAddress(hDLL, "DXW_D2D_Clear");
-        if (!DXW_D2D_Clear)
-        {
-            DWORD error = GetLastError();
-            TCHAR errorMsg[256];
-            _stprintf_s(errorMsg, _T("DXW_D2D_Clear GetProcAddress failed. Error code: %lu"), error);
-            MessageBox(nullptr, errorMsg, _T("Error"), MB_OK);
-        }
-
         DXW_Present = (DXW_PresentFunc)GetProcAddress(hDLL, "DXW_Present");
-        if (!DXW_Present)
-        {
-            DWORD error = GetLastError();
-            TCHAR errorMsg[256];
-            _stprintf_s(errorMsg, _T("DXW_Present GetProcAddress failed. Error code: %lu"), error);
-            MessageBox(nullptr, errorMsg, _T("Error"), MB_OK);
-        }
-
         DXW_D2D_BeginDraw = (DXW_D2D_BeginDrawFunc)GetProcAddress(hDLL, "DXW_D2D_BeginDraw");
-        if (!DXW_D2D_BeginDraw)
-        {
-            DWORD error = GetLastError();
-            TCHAR errorMsg[256];
-            _stprintf_s(errorMsg, _T("DXW_D2D_BeginDraw GetProcAddress failed. Error code: %lu"), error);
-            MessageBox(nullptr, errorMsg, _T("Error"), MB_OK);
-        }
-
         DXW_D2D_EndDraw = (DXW_D2D_EndDrawFunc)GetProcAddress(hDLL, "DXW_D2D_EndDraw");
-        if (!DXW_D2D_EndDraw)
-        {
-            DWORD error = GetLastError();
-            TCHAR errorMsg[256];
-            _stprintf_s(errorMsg, _T("DXW_D2D_EndDraw GetProcAddress failed. Error code: %lu"), error);
-            MessageBox(nullptr, errorMsg, _T("Error"), MB_OK);
-        }
-
         DXW_SetTargetWindow = (DXW_SetTargetWindowFunc)GetProcAddress(hDLL, "DXW_SetTargetWindow");
-        if (!DXW_SetTargetWindow)
-        {
-            DWORD error = GetLastError();
-            TCHAR errorMsg[256];
-            _stprintf_s(errorMsg, _T("DXW_SetTargetWindow GetProcAddress failed. Error code: %lu"), error);
-            MessageBox(nullptr, errorMsg, _T("Error"), MB_OK);
-        }
-
         DXW_IsInitialized = (DXW_IsInitializedFunc)GetProcAddress(hDLL, "DXW_IsInitialized");
-        if (!DXW_IsInitialized)
-        {
-            DWORD error = GetLastError();
-            TCHAR errorMsg[256];
-            _stprintf_s(errorMsg, _T("DXW_IsInitialized GetProcAddress failed. Error code: %lu"), error);
-            MessageBox(nullptr, errorMsg, _T("Error"), MB_OK);
-        }
-
         DXW_DemoRT = (DXW_DemoRTFunc)GetProcAddress(hDLL, "DXW_DemoRT");
-        if (!DXW_DemoRT)
-        {
-            DWORD error = GetLastError();
-            TCHAR errorMsg[256];
-            _stprintf_s(errorMsg, _T("DXW_DemoRT GetProcAddress failed. Error code: %lu"), error);
-            MessageBox(nullptr, errorMsg, _T("Error"), MB_OK);
-        }
-
         DXW_ResizeWindow = (DXW_ResizeWindowFunc)GetProcAddress(hDLL, "DXW_ResizeWindow");
-        if (!DXW_ResizeWindow)
-        {
-            DWORD error = GetLastError();
-            TCHAR errorMsg[256];
-            _stprintf_s(errorMsg, _T("DXW_ResizeWindow GetProcAddress failed. Error code: %lu"), error);
-            MessageBox(nullptr, errorMsg, _T("Error"), MB_OK);
-        }
-
         DXW_DemoNRT = (DXW_DemoNRTFunc)GetProcAddress(hDLL, "DXW_DemoNRT");
-        if (!DXW_DemoNRT)
-        {
-            DWORD error = GetLastError();
-            TCHAR errorMsg[256];
-            _stprintf_s(errorMsg, _T("DXW_DemoNRT GetProcAddress failed. Error code: %lu"), error);
-            MessageBox(nullptr, errorMsg, _T("Error"), MB_OK);
-        }
-
         DXW_ReleaseDxwResources = (DXW_ReleaseDxwResourcesFunc)GetProcAddress(hDLL, "DXW_ReleaseDxwResources");
-        if (!DXW_ReleaseDxwResources)
-        {
-            DWORD error = GetLastError();
-            TCHAR errorMsg[256];
-            _stprintf_s(errorMsg, _T("DXW_ReleaseDxwResources GetProcAddress failed. Error code: %lu"), error);
-            MessageBox(nullptr, errorMsg, _T("Error"), MB_OK);
-        }
-
         DXW_DemoLines = (DXW_DemoLinesFunc)GetProcAddress(hDLL, "DXW_DemoLines");
-        if (!DXW_DemoLines)
-        {
-            DWORD error = GetLastError();
-            TCHAR errorMsg[256];
-            _stprintf_s(errorMsg, _T("DXW_DemoLines GetProcAddress failed. Error code: %lu"), error);
-            MessageBox(nullptr, errorMsg, _T("Error"), MB_OK);
-        }
-
         DXW_Demo3D = (DXW_Demo3DFunc)GetProcAddress(hDLL, "DXW_Demo3D");
-        if (!DXW_Demo3D)
-        {
-            DWORD error = GetLastError();
-            TCHAR errorMsg[256];
-            _stprintf_s(errorMsg, _T("DXW_Demo3D GetProcAddress failed. Error code: %lu"), error);
-            MessageBox(nullptr, errorMsg, _T("Error"), MB_OK);
-        }
     }
 
     std::cout << "Wrapper loaded successfully!" << std::endl;
@@ -295,20 +182,15 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     int id = DXW_InitWindow(g_hDrawingPanel);
     int id2 = DXW_InitWindow(g_hDrawingPanel2);
-    //int id = DXW_InitWindow(hWndMain);
     std::cout << "Window allocated id was: " << id << std::endl;
 
-    DXW_SetTargetWindow(id); // redundant but fine - target window is always the last added window
-    //DXW_DemoRT();
-    //DXW_DemoNRT(0);
-    //DXW_Present(1);
-
+    DXW_SetTargetWindow(id);
 
     DXW_DemoLines(1000000);
 
     DXW_SetTargetWindow(id2);
-    DXW_DemoLines(1000000);
-    //DXW_Demo3D();
+    //DXW_DemoLines(1000000);
+    DXW_Demo3D();
 
     MSG msg = {};
     while (GetMessage(&msg, nullptr, 0, 0))

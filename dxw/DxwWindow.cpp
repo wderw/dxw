@@ -14,19 +14,6 @@ namespace dxw
 
 int DxwWindow::instanceCounter = 0;
 
-DxwWindow::~DxwWindow()
-{
-//	OutputDebugStringA("******************************** ~DxwWindow() called *******************************\n");
-//
-//#if defined(DEBUG) || defined(_DEBUG)
-//	ComPtr<ID3D11Debug> pDebugDevice;
-//	if (SUCCEEDED(pD3DDevice->QueryInterface(pDebugDevice.GetAddressOf())))
-//	{
-//		pDebugDevice->ReportLiveDeviceObjects(D3D11_RLDO_SUMMARY);
-//	}
-//#endif
-}
-
 DxwWindow::DxwWindow()
 {
 	id = instanceCounter++;
@@ -331,9 +318,9 @@ void DxwWindow::DemoLines(int lineCount)
 			std::chrono::time_point<std::chrono::steady_clock> lastFrameTime;
 			float fps{ 0 };
 			unsigned deltaMicroseconds{ 0 };
+			wchar_t fpsText[64];
 
 			static std::vector<Vertex> lineVerts = Utils::GenerateLines(windowWidth, windowHeight, lineCount);
-			std::vector<Vertex> tetrahedronVerts = Utils::GenerateTetrahedron();
 
 			D3D11_BUFFER_DESC linesVertexBufferDesc = Utils::VertexBufferDesc(lineVerts);
 			D3D11_SUBRESOURCE_DATA lineInitData = { lineVerts.data() };
@@ -341,8 +328,6 @@ void DxwWindow::DemoLines(int lineCount)
 			{
 				pD3DDevice->CreateBuffer(&linesVertexBufferDesc, &lineInitData, pLineVertexBuffer.GetAddressOf());
 			}
-
-			float fi = 0;
 
 			UINT stride = sizeof(Vertex);
 			UINT offset = 0;
@@ -359,28 +344,19 @@ void DxwWindow::DemoLines(int lineCount)
 
 			while (true)
 			{
-				fi += 1.0f;
 				D3D_Clear(0.2f, 0.2f, 0.2f, 1.0f);
 				pD3DDeviceContext->ClearDepthStencilView(pDepthStencilView.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
 
 				D3D_Draw(lineCount, 0);
 
 				D2D_BeginDraw();
+
 				CalculateFPS(lastFrameTime, deltaMicroseconds, fps);
-
-				wchar_t fpsText[64];
-				swprintf_s(fpsText, 64, L"FPS: %.2f\n[us]: %u", fps, deltaMicroseconds);
-
+				swprintf_s(fpsText, 64, L"FPS: %.2f\nT [us]: %u", fps, deltaMicroseconds);
 				D2D1_SIZE_F renderTargetSize = pD2DDeviceContext->GetSize();
 				D2D1_RECT_F textRect = D2D1::RectF(0, 0, 250, 50);
 
-				pD2DDeviceContext->DrawTextW(
-					fpsText,
-					wcslen(fpsText),
-					pDefaultTextFormat.Get(),
-					textRect,
-					pDefaultBrush.Get()
-				);
+				pD2DDeviceContext->DrawTextW(fpsText, wcslen(fpsText), pDefaultTextFormat.Get(), textRect, pDefaultBrush.Get());
 
 				D2D_EndDraw();
 				DX_Present(1);
@@ -390,6 +366,7 @@ void DxwWindow::DemoLines(int lineCount)
 
 void DxwWindow::Demo3D()
 {
+	DemoRT();
 }
 
 void DxwWindow::DemoRT()
@@ -399,28 +376,15 @@ void DxwWindow::DemoRT()
 			std::chrono::time_point<std::chrono::steady_clock> lastFrameTime;
 			float fps{ 0 };
 			unsigned deltaMicroseconds{ 0 };
-
-			static std::vector<Vertex> lineVerts = Utils::GenerateLines(windowWidth, windowHeight, 1000000);
-			std::vector<Vertex> tetrahedronVerts = Utils::GenerateTetrahedron();
-
-			D3D11_BUFFER_DESC linesVertexBufferDesc = Utils::VertexBufferDesc(lineVerts);
-			D3D11_SUBRESOURCE_DATA lineInitData = { lineVerts.data() };
-			if (pLineVertexBuffer == nullptr)
-			{
-				pD3DDevice->CreateBuffer(&linesVertexBufferDesc, &lineInitData, pLineVertexBuffer.GetAddressOf());
-			}
-
 			float fi = 0;
-
 			wchar_t fpsText[80] = L"TEST test za¿ó³æ gêœl¹ jaŸñ The quick brown fox jumps over the lazy dog";
+
+			std::vector<Vertex> tetrahedronVerts = Utils::GenerateTetrahedron();
 			D2D1_RECT_F textRect = D2D1::RectF(0, 0, 250, 50);
-
-
 			D3D11_BUFFER_DESC vertexBufferDesc = Utils::VertexBufferDesc(tetrahedronVerts);
 			D3D11_SUBRESOURCE_DATA initData = { tetrahedronVerts.data() };
 
             pD3DDevice->CreateBuffer(&vertexBufferDesc, &initData, pVertexBuffer.GetAddressOf());
-
 			UINT stride = sizeof(Vertex);
 			UINT offset = 0;
 			pD3DDeviceContext->IASetInputLayout(pInputLayout.Get());
@@ -432,10 +396,6 @@ void DxwWindow::DemoRT()
 			{
 				fi += 1.0f;
 				D3D_Clear(0.2f, 0.2f, 0.2f, 1.0f);
-
-				D2D_BeginDraw();
-				pD2DDeviceContext->FillRoundedRectangle(D2D1::RoundedRect(D2D1::RectF(250, 250, 600, 400), 15.0f, 15.0f), pDefaultBrush.Get());
-				D2D_EndDraw();
 
 				pD3DDeviceContext->ClearDepthStencilView(pDepthStencilView.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
 
@@ -458,34 +418,16 @@ void DxwWindow::DemoRT()
 				D3D_SetTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
 				D3D_Draw(12, 0);
 
-				pD3DDeviceContext->IASetVertexBuffers(0, 1, pLineVertexBuffer.GetAddressOf(), &stride, &offset);
-				D3D_SetTopology(D3D11_PRIMITIVE_TOPOLOGY_LINESTRIP);
-				D3D_ResetTransformMatrix();
-				D3D_ResetProjectionMatrix();
-				D3D_UpdateMatrixSubresources();
-				D3D_Draw(100, 0);
-
-
 				D2D_BeginDraw();
+
 				CalculateFPS(lastFrameTime, deltaMicroseconds, fps);
-
-				wchar_t fpsText[64];
-				swprintf_s(fpsText, 64, L"FPS: %.2f\n[us]: %u", fps, deltaMicroseconds);
-
+				swprintf_s(fpsText, 64, L"FPS: %.2f\nT [us]: %u", fps, deltaMicroseconds);
 				D2D1_SIZE_F renderTargetSize = pD2DDeviceContext->GetSize();
 				D2D1_RECT_F textRect = D2D1::RectF(0, 0, 250, 50);
 
-				pD2DDeviceContext->DrawTextW(
-					fpsText,
-					wcslen(fpsText),
-					pDefaultTextFormat.Get(),
-					textRect,
-					pDefaultBrush.Get()
-				);
-
+				pD2DDeviceContext->DrawTextW(fpsText, wcslen(fpsText), pDefaultTextFormat.Get(), textRect, pDefaultBrush.Get());
 
 				D2D_EndDraw();
-
 				DX_Present(1);
 			}
 		}).detach();
@@ -819,14 +761,6 @@ void DxwWindow::InitDirectX(HWND hWnd)
 	LOG_INFO("DirectX initialization complete");
 	PrintAdapterInfo();
 	PrintSystemInfo();
-
-//#if defined(DEBUG) || defined(_DEBUG)
-//	ComPtr<ID3D11Debug> pDebugDevice;
-//	if (SUCCEEDED(pD3DDevice->QueryInterface(pDebugDevice.GetAddressOf())))
-//	{
-//		pDebugDevice->ReportLiveDeviceObjects(D3D11_RLDO_DETAIL);
-//	}
-//#endif
 }
 
 void DxwWindow::PrintAdapterInfo()
