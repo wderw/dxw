@@ -245,67 +245,10 @@ void DxwWindow::DemoNRT(float fi)
 	wchar_t fpsText[80] = L"TEST test za¿ó³æ gêœl¹ jaŸñ The quick brown fox jumps over the lazy dog";
 	D2D1_RECT_F textRect = D2D1::RectF(0, 0, 250, 50);
 
-	static std::vector<Vertex> lineVerts = Utils::GenerateLines(windowWidth, windowHeight, 1000000);
-	static std::vector<Vertex> tetrahedronVerts = Utils::GenerateTetrahedron();
-
-	D3D11_BUFFER_DESC vertexBufferDesc = Utils::VertexBufferDesc(tetrahedronVerts);
-	D3D11_SUBRESOURCE_DATA initData = { tetrahedronVerts.data() };
-
-	D3D11_BUFFER_DESC linesVertexBufferDesc = Utils::VertexBufferDesc(lineVerts);
-	D3D11_SUBRESOURCE_DATA lineInitData = { lineVerts.data() };
-
-	if (pVertexBuffer == nullptr)
-	{
-		pD3DDevice->CreateBuffer(&vertexBufferDesc, &initData, pVertexBuffer.GetAddressOf());
-	}
-
-	if (pLineVertexBuffer == nullptr)
-	{
-		pD3DDevice->CreateBuffer(&linesVertexBufferDesc, &lineInitData, pLineVertexBuffer.GetAddressOf());
-	}
-
-	UINT stride = sizeof(Vertex);
-	UINT offset = 0;
-	pD3DDeviceContext->IASetInputLayout(pInputLayout.Get());
-	pD3DDeviceContext->VSSetShader(pVertexShader.Get(), nullptr, 0);
-	pD3DDeviceContext->PSSetShader(pPixelShader.Get(), nullptr, 0);
-
-	pD3DDeviceContext->IASetVertexBuffers(0, 1, pVertexBuffer.GetAddressOf(), &stride, &offset);
-
-	D3D_Clear(0.2f, 0.2f, 0.2f, 1.0f);
+	D3D_Clear(0, 0, 0, 1.0f);
 
 	D2D_BeginDraw();
 	pD2DDeviceContext->FillRoundedRectangle(D2D1::RoundedRect(D2D1::RectF(250, 250, 600, 400), 15.0f, 15.0f), pDefaultBrush2.Get());
-	D2D_EndDraw();
-
-	pD3DDeviceContext->ClearDepthStencilView(pDepthStencilView.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
-
-	D3D_SetPerspectiveProjectionMatrix(DirectX::XM_PIDIV4, static_cast<float>(windowWidth) / static_cast<float>(windowHeight), 0.01f, 100.0f);
-	D3D_SetTranslation(0, 0, 1);
-	D3D_SetScale(1.5f, 1.5f, 1.5f);
-	D3D_SetRotation(fi, fi + fi / 2, 0);
-	D3D_RecalculateTransformMatrix();
-	D3D_UpdateMatrixSubresources();
-
-	D3D_SetTopology(D3D11_PRIMITIVE_TOPOLOGY_LINESTRIP);
-	D3D_Draw(12, 0);
-
-	D3D_SetScale(1.2f, 1.2f, 1.2f);
-	D3D_SetRotation(fi / 3, fi * 1.2f, fi / 2);
-	D3D_RecalculateTransformMatrix();
-	D3D_UpdateMatrixSubresources();
-
-	D3D_SetTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
-	D3D_Draw(12, 0);
-
-	pD3DDeviceContext->IASetVertexBuffers(0, 1, pLineVertexBuffer.GetAddressOf(), &stride, &offset);
-	D3D_SetTopology(D3D11_PRIMITIVE_TOPOLOGY_LINESTRIP);
-	D3D_ResetTransformMatrix();
-	D3D_ResetProjectionMatrix();
-	D3D_UpdateMatrixSubresources();
-	D3D_Draw(1000000, 0);
-
-	D2D_BeginDraw();
 	pD2DDeviceContext->DrawTextW(fpsText, wcslen(fpsText), pDefaultTextFormat.Get(), textRect, pDefaultBrush.Get());
 	pD2DDeviceContext->FillRoundedRectangle(D2D1::RoundedRect(D2D1::RectF(80, 80, 400, 500), 15.0f, 15.0f), pDefaultBrush2.Get());
 	D2D_EndDraw();

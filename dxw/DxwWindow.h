@@ -36,6 +36,7 @@ public:
 	int GetId() const { return id; }
 	DirectX::XMMATRIX RecalculateTransformMatrix();
 
+	// d3d-specific
 	void D3D_Clear(float, float, float, float);
 	void D3D_SetScale(float, float, float);
 	void D3D_SetRotation(float, float, float);
@@ -48,16 +49,20 @@ public:
 	void D3D_SetTopology(D3D11_PRIMITIVE_TOPOLOGY);
 	void D3D_Draw(int, int);
 
+	// d2d-specific
 	void D2D_Clear();
 	void D2D_DrawLine(float, float, float, float, const std::string& brushName);
 	void D2D_BeginDraw();
 	void D2D_EndDraw();
+
+	// dx-general
 	void DX_Present(int);
-	void DemoRT();
+	void ResizeWindow(unsigned int, unsigned int);
+
+	// demos
 	void DemoNRT(float);
 	void DemoLines(int);
 	void Demo3D();
-	void ResizeWindow(unsigned int, unsigned int);
 
 	bool operator==(const DxwWindow& other) const
 	{
@@ -106,7 +111,6 @@ private:
 	ComPtr<IDXGISurface> pSurface{ nullptr };
 
 	ComPtr<ID3D11Buffer> pLineVertexBuffer{ nullptr };
-
 
 	TransformBuffer transformBufferData{ DirectX::XMMatrixIdentity(), DirectX::XMMatrixIdentity() };
 	D3D11_BUFFER_DESC transformBufferDesc{};
