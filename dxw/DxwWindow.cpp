@@ -366,11 +366,6 @@ void DxwWindow::DemoLines(int lineCount)
 
 void DxwWindow::Demo3D()
 {
-	DemoRT();
-}
-
-void DxwWindow::DemoRT()
-{
 	std::thread([&]()
 		{
 			std::chrono::time_point<std::chrono::steady_clock> lastFrameTime;

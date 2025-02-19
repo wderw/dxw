@@ -181,7 +181,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     UpdateWindow(hWndMain);
 
     int id = DXW_InitWindow(g_hDrawingPanel);
-    //int id2 = DXW_InitWindow(g_hDrawingPanel2);
+    int id2 = DXW_InitWindow(g_hDrawingPanel2);
     std::cout << "Window allocated id was: " << id << std::endl;
 
     DXW_SetTargetWindow(id);
@@ -191,9 +191,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     //DXW_DemoLines(1000000);
 
-    //DXW_SetTargetWindow(id2);
+    DXW_SetTargetWindow(id2);
     //DXW_DemoLines(1000000);
-    //DXW_Demo3D();
+    DXW_Demo3D();
 
     MSG msg = {};
     while (GetMessage(&msg, nullptr, 0, 0))

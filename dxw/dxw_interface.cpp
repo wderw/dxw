@@ -34,12 +34,6 @@ void DXW_SetTargetWindow(int newId)
 	DxwSharedContext::GetInstance().SetTargetId(newId);
 }
 
-void DXW_DemoRT()
-{
-	LOG_TRACE("DXW_DemoRT called");
-	DxwSharedContext::GetInstance().GetCurrentWindow()->DemoRT();
-}
-
 void DXW_DemoNRT(float fi)
 {
 	LOG_TRACE("DXW_NRTDemo called");

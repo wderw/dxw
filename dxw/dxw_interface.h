@@ -8,7 +8,6 @@ namespace dxw
 extern "C" __declspec(dllexport) int  DXW_InitWindow(HWND hWnd);
 extern "C" __declspec(dllexport) void DXW_ResizeWindow(unsigned int, unsigned int);
 extern "C" __declspec(dllexport) void DXW_SetTargetWindow(int);
-extern "C" __declspec(dllexport) void DXW_DemoRT();
 extern "C" __declspec(dllexport) void DXW_DemoNRT(float);
 extern "C" __declspec(dllexport) void DXW_DemoLines(int);
 extern "C" __declspec(dllexport) void DXW_Demo3D();
