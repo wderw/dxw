@@ -20,5 +20,6 @@ extern "C" __declspec(dllexport) void DXW_D2D_DrawLine(float, float, float, floa
 extern "C" __declspec(dllexport) void DXW_Present(int);
 extern "C" __declspec(dllexport) bool DXW_IsInitialized();
 extern "C" __declspec(dllexport) void DXW_ReleaseDxwResources();
+extern "C" __declspec(dllexport) void DXW_OnResize(unsigned, unsigned);
 
 }

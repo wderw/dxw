@@ -82,6 +82,12 @@ void DXW_ReleaseDxwResources()
 	DxwSharedContext::GetInstance().ReleaseDxwResources();
 }
 
+void DXW_OnResize(unsigned requestedWidth, unsigned requestedHeight)
+{
+	LOG_TRACE("DXW_OnResize called");
+	DxwSharedContext::GetInstance().GetCurrentWindow()->ResizeWindow(requestedWidth, requestedHeight);
+}
+
 void DXW_D3D_Clear(float r, float g, float b, float a)
 {
 	LOG_TRACE("DXW_D3D_Clear called");

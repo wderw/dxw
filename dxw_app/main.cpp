@@ -119,8 +119,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             static float fi = 0;
             fi += 1.0f;
 
-            //DXW_DemoNRT(fi);
-            //DXW_Present(1);
+            DXW_DemoNRT(fi);
+            DXW_Present(1);
         }
         return 0;
     }
@@ -181,16 +181,19 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     UpdateWindow(hWndMain);
 
     int id = DXW_InitWindow(g_hDrawingPanel);
-    int id2 = DXW_InitWindow(g_hDrawingPanel2);
+    //int id2 = DXW_InitWindow(g_hDrawingPanel2);
     std::cout << "Window allocated id was: " << id << std::endl;
 
     DXW_SetTargetWindow(id);
 
-    DXW_DemoLines(1000000);
+    DXW_DemoNRT(1.0f);
+    DXW_Present(1);
 
-    DXW_SetTargetWindow(id2);
     //DXW_DemoLines(1000000);
-    DXW_Demo3D();
+
+    //DXW_SetTargetWindow(id2);
+    //DXW_DemoLines(1000000);
+    //DXW_Demo3D();
 
     MSG msg = {};
     while (GetMessage(&msg, nullptr, 0, 0))
