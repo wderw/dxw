@@ -51,9 +51,14 @@ public:
 
 	// d2d-specific
 	void D2D_Clear();
-	void D2D_DrawLine(float, float, float, float, const std::string& brushName);
+	void D2D_DrawLine(float, float, float, float);
 	void D2D_BeginDraw();
 	void D2D_EndDraw();
+	void D2D_SetScale(float, float);
+	void D2D_SetRotation(float);
+	void D2D_SetTranslation(float, float);
+	void D2D_ResetTransformMatrix();
+	void D2D_RecalculateTransformMatrix();
 
 	// dx-general
 	void DX_Present(int);
@@ -83,6 +88,13 @@ private:
 	int windowWidth{ 0 };
 	int windowHeight{ 0 };
 
+	// 2d resources
+	D2D1_MATRIX_3X2_F scalingMatrix2D{ D2D1::IdentityMatrix() };
+	D2D1_MATRIX_3X2_F rotationMatrix2D{ D2D1::IdentityMatrix() };
+	D2D1_MATRIX_3X2_F translationMatrix2D{ D2D1::IdentityMatrix() };
+	D2D1_MATRIX_3X2_F transformMatrix2D{ D2D1::IdentityMatrix() };
+
+	// 3d resources
 	DirectX::XMMATRIX scalingMatrix{ DirectX::XMMatrixIdentity() };
 	DirectX::XMMATRIX rotationMatrix{ DirectX::XMMatrixIdentity() };
 	DirectX::XMMATRIX translationMatrix{ DirectX::XMMatrixIdentity() };

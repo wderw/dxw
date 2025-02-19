@@ -88,7 +88,7 @@ void DxwWindow::D2D_Clear()
 	pD2DDeviceContext->Clear(D2D1::ColorF(0, 1, 0, 1));
 }
 
-void DxwWindow::D2D_DrawLine(float x0, float y0, float x1, float y1, const std::string& brushName)
+void DxwWindow::D2D_DrawLine(float x0, float y0, float x1, float y1)
 {
 	pD2DDeviceContext->DrawLine(D2D1::Point2F(x0, y0), D2D1::Point2F(x1, y1), pDefaultBrush.Get());
 }
@@ -101,6 +101,34 @@ void DxwWindow::D2D_BeginDraw()
 void DxwWindow::D2D_EndDraw()
 {
 	pD2DDeviceContext->EndDraw();
+}
+
+void DxwWindow::D2D_SetScale(float scaleX, float scaleY)
+{
+	scalingMatrix2D = D2D1::Matrix3x2F::Scale(D2D1::SizeF(scaleX, scaleY));
+}
+
+void DxwWindow::D2D_SetRotation(float degrees)
+{
+	rotationMatrix2D = D2D1::Matrix3x2F::Rotation(degrees);
+}
+
+void DxwWindow::D2D_SetTranslation(float dx, float dy)
+{
+	translationMatrix2D = D2D1::Matrix3x2F::Translation(dx, dy);
+}
+
+void DxwWindow::D2D_RecalculateTransformMatrix()
+{
+	transformMatrix2D = scalingMatrix2D * rotationMatrix2D;
+	transformMatrix2D = transformMatrix2D * translationMatrix2D;
+	pD2DDeviceContext->SetTransform(transformMatrix2D);
+}
+
+void DxwWindow::D2D_ResetTransformMatrix()
+{
+	transformMatrix2D = D2D1::IdentityMatrix();
+	pD2DDeviceContext->SetTransform(transformMatrix2D);
 }
 
 void DxwWindow::DX_Present(int vsync = 1)
@@ -249,8 +277,19 @@ void DxwWindow::DemoNRT(float fi)
 
 	D2D_BeginDraw();
 	pD2DDeviceContext->FillRoundedRectangle(D2D1::RoundedRect(D2D1::RectF(250, 250, 600, 400), 15.0f, 15.0f), pDefaultBrush2.Get());
-	pD2DDeviceContext->DrawTextW(fpsText, wcslen(fpsText), pDefaultTextFormat.Get(), textRect, pDefaultBrush.Get());
+
+	//D2D_DrawLine(0, 0, 100, 100);
 	pD2DDeviceContext->FillRoundedRectangle(D2D1::RoundedRect(D2D1::RectF(80, 80, 400, 500), 15.0f, 15.0f), pDefaultBrush2.Get());
+
+	D2D_SetScale(1.0f, 1.8f);
+	D2D_SetRotation(35.0f);
+	D2D_SetTranslation(50, 80);
+	D2D_RecalculateTransformMatrix();
+	pD2DDeviceContext->DrawTextW(fpsText, wcslen(fpsText), pDefaultTextFormat.Get(), textRect, pDefaultBrush.Get());
+
+	//D2D_ResetTransformMatrix();
+	//pD2DDeviceContext->DrawTextW(fpsText, wcslen(fpsText), pDefaultTextFormat.Get(), textRect, pDefaultBrush.Get());
+
 	D2D_EndDraw();
 }
 
