@@ -59,6 +59,7 @@ public:
 	void D2D_SetTranslation(float, float);
 	void D2D_ResetTransformMatrix();
 	void D2D_RecalculateTransformMatrix();
+	void D2D_DrawText(const WCHAR* text, D2D1_RECT_F textRect);
 
 	// dx-general
 	void DX_Present(int);

@@ -125,6 +125,11 @@ void DxwWindow::D2D_RecalculateTransformMatrix()
 	pD2DDeviceContext->SetTransform(transformMatrix2D);
 }
 
+void DxwWindow::D2D_DrawText(const WCHAR* text, D2D1_RECT_F textRect)
+{
+	pD2DDeviceContext->DrawTextW(text, wcslen(text), pDefaultTextFormat.Get(), textRect, pDefaultBrush.Get());
+}
+
 void DxwWindow::D2D_ResetTransformMatrix()
 {
 	transformMatrix2D = D2D1::IdentityMatrix();
@@ -271,7 +276,7 @@ void DxwWindow::ResizeD3DSwapChain(UINT width, UINT height)
 void DxwWindow::DemoNRT(float fi)
 {
 	wchar_t fpsText[80] = L"TEST test za¿ó³æ gêœl¹ jaŸñ The quick brown fox jumps over the lazy dog";
-	D2D1_RECT_F textRect = D2D1::RectF(0, 0, 250, 50);
+	D2D1_RECT_F textRect = D2D1::RectF(0, 0, 500, 20);
 
 	D3D_Clear(0, 0, 0, 1.0f);
 
@@ -281,14 +286,15 @@ void DxwWindow::DemoNRT(float fi)
 	//D2D_DrawLine(0, 0, 100, 100);
 	pD2DDeviceContext->FillRoundedRectangle(D2D1::RoundedRect(D2D1::RectF(80, 80, 400, 500), 15.0f, 15.0f), pDefaultBrush2.Get());
 
-	D2D_SetScale(1.0f, 1.8f);
-	D2D_SetRotation(35.0f);
-	D2D_SetTranslation(50, 80);
-	D2D_RecalculateTransformMatrix();
-	pD2DDeviceContext->DrawTextW(fpsText, wcslen(fpsText), pDefaultTextFormat.Get(), textRect, pDefaultBrush.Get());
+	//D2D_SetScale(1.0f, 1.8f);
+	//D2D_SetRotation(35.0f);
+	//D2D_SetTranslation(50, 80);
+	//D2D_RecalculateTransformMatrix();
+
+	//D2D_DrawText(fpsText, textRect);
 
 	//D2D_ResetTransformMatrix();
-	//pD2DDeviceContext->DrawTextW(fpsText, wcslen(fpsText), pDefaultTextFormat.Get(), textRect, pDefaultBrush.Get());
+	//D2D_DrawText(fpsText, textRect);
 
 	D2D_EndDraw();
 }

@@ -88,10 +88,46 @@ void DXW_D2D_Clear()
 	DxwSharedContext::GetInstance().GetCurrentWindow()->D2D_Clear();
 }
 
-void DXW_D2D_DrawLine(float x0, float y0, float x1, float y1, const char* brushName)
+void DXW_D2D_DrawLine(float x0, float y0, float x1, float y1)
 {
 	LOG_TRACE("DXW_D2D_DrawLine called");
 	DxwSharedContext::GetInstance().GetCurrentWindow()->D2D_DrawLine(x0, y0, x1, y1);
+}
+
+void DXW_D2D_SetScale(float scaleX, float scaleY)
+{
+	LOG_TRACE("DXW_D2D_SetScale called");
+	DxwSharedContext::GetInstance().GetCurrentWindow()->D2D_SetScale(scaleX, scaleY);
+}
+
+void DXW_D2D_SetRotation(float degrees)
+{
+	LOG_TRACE("DXW_D2D_SetRotation called");
+	DxwSharedContext::GetInstance().GetCurrentWindow()->D2D_SetRotation(degrees);
+}
+
+void DXW_D2D_SetTranslation(float dx, float dy)
+{
+	LOG_TRACE("DXW_D2D_SetTranslation called");
+	DxwSharedContext::GetInstance().GetCurrentWindow()->D2D_SetTranslation(dx, dy);
+}
+
+void DXW_D2D_RecalculateTransformMatrix()
+{
+	LOG_TRACE("DXW_D2D_RecalculateTransformMatrix called");
+	DxwSharedContext::GetInstance().GetCurrentWindow()->D2D_RecalculateTransformMatrix();
+}
+
+void DXW_D2D_ResetTransformMatrix()
+{
+	LOG_TRACE("DXW_D2D_ResetTransformMatrix called");
+	DxwSharedContext::GetInstance().GetCurrentWindow()->D2D_ResetTransformMatrix();
+}
+
+void DXW_D2D_DrawText(const WCHAR* text, float left, float top, float right, float bottom)
+{
+	LOG_TRACE("DXW_D2D_RecalculateTransformMatrix called");
+	DxwSharedContext::GetInstance().GetCurrentWindow()->D2D_DrawText(text, D2D1::RectF(left, top, right, bottom));
 }
 
 void DXW_D2D_BeginDraw()

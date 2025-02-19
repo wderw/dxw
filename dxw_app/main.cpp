@@ -9,35 +9,64 @@ HINSTANCE hDLL;
 HWND g_hDrawingPanel = nullptr;
 HWND g_hDrawingPanel2 = nullptr;
 
-typedef int(__stdcall*  DXW_InitWindowFunc)(HWND);
-typedef void(__stdcall* DXW_SetTargetWindowFunc)(int);
+
+// DELEGATES
+// 3d
 typedef void(__stdcall* DXW_D3D_ClearFunc)(float, float, float, float);
+
+// 2d
 typedef void(__stdcall* DXW_D2D_BeginDrawFunc)();
 typedef void(__stdcall* DXW_D2D_EndDrawFunc)();
 typedef void(__stdcall* DXW_D2D_ClearFunc)();
+typedef void(__stdcall* DXW_D2D_SetScaleFunc)(float, float);
+typedef void(__stdcall* DXW_D2D_SetRotationFunc)(float);
+typedef void(__stdcall* DXW_D2D_SetTranslationFunc)(float, float);
+typedef void(__stdcall* DXW_D2D_RecalculateTransformMatrixFunc)();
+typedef void(__stdcall* DXW_D2D_ResetTransformMatrixFunc)();
+typedef void(__stdcall* DXW_D2D_DrawTextFunc)(const WCHAR*, float, float, float, float);
+
+// general
+typedef int(__stdcall*  DXW_InitWindowFunc)(HWND);
+typedef void(__stdcall* DXW_SetTargetWindowFunc)(int);
 typedef void(__stdcall* DXW_PresentFunc)(int);
 typedef bool(__stdcall* DXW_IsInitializedFunc)();
-typedef void(__stdcall* DXW_DemoRTFunc)();
-typedef void(__stdcall* DXW_DemoLinesFunc)(int);
-typedef void(__stdcall* DXW_Demo3DFunc)();
-typedef void(__stdcall* DXW_DemoNRTFunc)(float);
 typedef void(__stdcall* DXW_ResizeWindowFunc)(unsigned int, unsigned int);
 typedef void(__stdcall* DXW_ReleaseDxwResourcesFunc)();
 
+// demos
+typedef void(__stdcall* DXW_DemoLinesFunc)(int);
+typedef void(__stdcall* DXW_Demo3DFunc)();
+typedef void(__stdcall* DXW_DemoNRTFunc)(float);
+// DELEGATES END
+
+// POINTERS
+// 3d
+DXW_D3D_ClearFunc DXW_D3D_Clear = nullptr;
+
+// 2d
+DXW_D2D_BeginDrawFunc DXW_D2D_BeginDraw = nullptr;
+DXW_D2D_EndDrawFunc DXW_D2D_EndDraw = nullptr;
+DXW_D2D_ClearFunc DXW_D2D_Clear = nullptr;
+DXW_D2D_SetScaleFunc DXW_D2D_SetScale = nullptr;
+DXW_D2D_SetRotationFunc DXW_D2D_SetRotation = nullptr;
+DXW_D2D_SetTranslationFunc DXW_D2D_SetTranslation = nullptr;
+DXW_D2D_RecalculateTransformMatrixFunc DXW_D2D_RecalculateTransformMatrix = nullptr;
+DXW_D2D_ResetTransformMatrixFunc DXW_D2D_ResetTransformMatrix = nullptr;
+DXW_D2D_DrawTextFunc DXW_D2D_DrawText = nullptr;
+
+// general
 DXW_SetTargetWindowFunc     DXW_SetTargetWindow     = nullptr;
 DXW_InitWindowFunc          DXW_InitWindow          = nullptr;
-DXW_D3D_ClearFunc           DXW_D3D_Clear           = nullptr;
-DXW_D2D_BeginDrawFunc       DXW_D2D_BeginDraw       = nullptr;
-DXW_D2D_EndDrawFunc         DXW_D2D_EndDraw         = nullptr;
-DXW_D2D_ClearFunc           DXW_D2D_Clear           = nullptr;
 DXW_PresentFunc             DXW_Present             = nullptr;
 DXW_IsInitializedFunc       DXW_IsInitialized       = nullptr;
-DXW_DemoRTFunc              DXW_DemoRT              = nullptr;
+DXW_ResizeWindowFunc        DXW_ResizeWindow        = nullptr;
+DXW_ReleaseDxwResourcesFunc DXW_ReleaseDxwResources = nullptr;
+
+// demos
 DXW_DemoNRTFunc             DXW_DemoNRT             = nullptr;
 DXW_DemoLinesFunc           DXW_DemoLines           = nullptr;
 DXW_Demo3DFunc              DXW_Demo3D              = nullptr;
-DXW_ResizeWindowFunc        DXW_ResizeWindow        = nullptr;
-DXW_ReleaseDxwResourcesFunc DXW_ReleaseDxwResources = nullptr;
+// POINTERS END
 
 const std::wstring libraryName = L"dxw.dll";
 void CreateDrawingPanels(HWND parentHwnd);
@@ -75,20 +104,32 @@ bool LoadWrapperDll()
 
     if (hDLL)
     {
-        DXW_InitWindow = (DXW_InitWindowFunc)GetProcAddress(hDLL, "DXW_InitWindow");
+        // 3d
         DXW_D3D_Clear = (DXW_D3D_ClearFunc)GetProcAddress(hDLL, "DXW_D3D_Clear");
+
+        // 2d
         DXW_D2D_Clear = (DXW_D2D_ClearFunc)GetProcAddress(hDLL, "DXW_D2D_Clear");
-        DXW_Present = (DXW_PresentFunc)GetProcAddress(hDLL, "DXW_Present");
         DXW_D2D_BeginDraw = (DXW_D2D_BeginDrawFunc)GetProcAddress(hDLL, "DXW_D2D_BeginDraw");
         DXW_D2D_EndDraw = (DXW_D2D_EndDrawFunc)GetProcAddress(hDLL, "DXW_D2D_EndDraw");
+        DXW_D2D_SetScale = (DXW_D2D_SetScaleFunc)GetProcAddress(hDLL, "DXW_D2D_SetScale");
+        DXW_D2D_SetRotation = (DXW_D2D_SetRotationFunc)GetProcAddress(hDLL, "DXW_D2D_SetRotation");
+        DXW_D2D_SetTranslation = (DXW_D2D_SetTranslationFunc)GetProcAddress(hDLL, "DXW_D2D_SetTranslation");
+        DXW_D2D_RecalculateTransformMatrix = (DXW_D2D_RecalculateTransformMatrixFunc)GetProcAddress(hDLL, "DXW_D2D_RecalculateTransformMatrix");
+        DXW_D2D_ResetTransformMatrix = (DXW_D2D_ResetTransformMatrixFunc)GetProcAddress(hDLL, "DXW_D2D_ResetTransformMatrix");
+        DXW_D2D_DrawText = (DXW_D2D_DrawTextFunc)GetProcAddress(hDLL, "DXW_D2D_DrawText");
+
+        // general
+        DXW_InitWindow = (DXW_InitWindowFunc)GetProcAddress(hDLL, "DXW_InitWindow");
+        DXW_Present = (DXW_PresentFunc)GetProcAddress(hDLL, "DXW_Present");
         DXW_SetTargetWindow = (DXW_SetTargetWindowFunc)GetProcAddress(hDLL, "DXW_SetTargetWindow");
         DXW_IsInitialized = (DXW_IsInitializedFunc)GetProcAddress(hDLL, "DXW_IsInitialized");
-        DXW_DemoRT = (DXW_DemoRTFunc)GetProcAddress(hDLL, "DXW_DemoRT");
         DXW_ResizeWindow = (DXW_ResizeWindowFunc)GetProcAddress(hDLL, "DXW_ResizeWindow");
-        DXW_DemoNRT = (DXW_DemoNRTFunc)GetProcAddress(hDLL, "DXW_DemoNRT");
         DXW_ReleaseDxwResources = (DXW_ReleaseDxwResourcesFunc)GetProcAddress(hDLL, "DXW_ReleaseDxwResources");
+
+        // demos
         DXW_DemoLines = (DXW_DemoLinesFunc)GetProcAddress(hDLL, "DXW_DemoLines");
         DXW_Demo3D = (DXW_Demo3DFunc)GetProcAddress(hDLL, "DXW_Demo3D");
+        DXW_DemoNRT = (DXW_DemoNRTFunc)GetProcAddress(hDLL, "DXW_DemoNRT");
     }
 
     std::cout << "Wrapper loaded successfully!" << std::endl;
@@ -187,13 +228,32 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     DXW_SetTargetWindow(id);
 
     DXW_DemoNRT(1.0f);
+
+    DXW_D2D_BeginDraw();
+
+    DXW_D2D_SetScale(1.0f, 2.2f);
+    DXW_D2D_SetRotation(35.0f);
+    DXW_D2D_SetTranslation(100.0f, 50.0f);
+    DXW_D2D_RecalculateTransformMatrix();
+    DXW_D2D_DrawText(L"AAAAAAAAA¥¥ÆAIEOU hehe", 0, 0, 250, 250);
+
+    DXW_D2D_ResetTransformMatrix();
+    DXW_D2D_SetRotation(-180.0f);
+    DXW_D2D_SetTranslation(300.0f, 200.0f);
+    DXW_D2D_RecalculateTransformMatrix();
+
+    DXW_D2D_DrawText(L"AAAAAAAAA¥¥ÆAIEOU hehe", 0, 0, 250, 250);
+
+    DXW_D2D_EndDraw();
+
     DXW_Present(1);
+
 
     //DXW_DemoLines(1000000);
 
     DXW_SetTargetWindow(id2);
-    //DXW_DemoLines(1000000);
-    DXW_Demo3D();
+    DXW_DemoLines(1000000);
+    //DXW_Demo3D();
 
     MSG msg = {};
     while (GetMessage(&msg, nullptr, 0, 0))
