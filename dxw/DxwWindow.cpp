@@ -83,9 +83,9 @@ void DxwWindow::D3D_Draw(int vertexCount, int startVertexLocation)
 	pD3DDeviceContext->Draw(vertexCount, startVertexLocation);
 }
 
-void DxwWindow::D2D_Clear()
+void DxwWindow::D2D_Clear(float r, float g, float b, float a)
 {
-	pD2DDeviceContext->Clear(D2D1::ColorF(0, 1, 0, 1));
+	pD2DDeviceContext->Clear(D2D1::ColorF(r, g, b, a));
 }
 
 void DxwWindow::D2D_DrawLine(float x0, float y0, float x1, float y1)
@@ -132,6 +132,9 @@ void DxwWindow::D2D_DrawText(const WCHAR* text, D2D1_RECT_F textRect)
 
 void DxwWindow::D2D_ResetTransformMatrix()
 {
+	scalingMatrix2D = D2D1::IdentityMatrix();
+	rotationMatrix2D = D2D1::IdentityMatrix();
+	translationMatrix2D = D2D1::IdentityMatrix();
 	transformMatrix2D = D2D1::IdentityMatrix();
 	pD2DDeviceContext->SetTransform(transformMatrix2D);
 }

@@ -50,7 +50,7 @@ public:
 	void D3D_Draw(int, int);
 
 	// d2d-specific
-	void D2D_Clear();
+	void D2D_Clear(float, float, float, float);
 	void D2D_DrawLine(float, float, float, float);
 	void D2D_BeginDraw();
 	void D2D_EndDraw();

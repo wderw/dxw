@@ -10,7 +10,7 @@ extern "C" __declspec(dllexport) void DXW_D3D_Clear(float, float, float, float);
 // 2d-specific
 extern "C" __declspec(dllexport) void DXW_D2D_BeginDraw();
 extern "C" __declspec(dllexport) void DXW_D2D_EndDraw();
-extern "C" __declspec(dllexport) void DXW_D2D_Clear();
+extern "C" __declspec(dllexport) void DXW_D2D_Clear(float, float, float, float);
 extern "C" __declspec(dllexport) void DXW_D2D_DrawLine(float, float, float, float);
 extern "C" __declspec(dllexport) void DXW_D2D_SetScale(float, float);
 extern "C" __declspec(dllexport) void DXW_D2D_SetRotation(float);

@@ -82,10 +82,10 @@ void DXW_D3D_Clear(float r, float g, float b, float a)
 	DxwSharedContext::GetInstance().GetCurrentWindow()->D3D_Clear(r, g, b, a);
 }
 
-void DXW_D2D_Clear()
+void DXW_D2D_Clear(float r, float g, float b, float a)
 {
 	LOG_TRACE("DXW_D2D_Clear called");
-	DxwSharedContext::GetInstance().GetCurrentWindow()->D2D_Clear();
+	DxwSharedContext::GetInstance().GetCurrentWindow()->D2D_Clear(r, g, b, a);
 }
 
 void DXW_D2D_DrawLine(float x0, float y0, float x1, float y1)
