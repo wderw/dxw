@@ -244,6 +244,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     std::cout << "Window allocated id was: " << id << std::endl;
 
     DXW_SetTargetWindow(id);
+    DXW_DemoNRT(1);
 
     DXW_D2D_BeginDraw();
 
@@ -251,8 +252,10 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     //DXW_D2D_FillRectangle(10.0f, 10.0f, 100.0f, 100.0f);
     //DXW_D2D_DrawRectangle(40.0f, 40.0f, 120.0f, 120.0f);
 
-    DXW_D2D_FillEllipse(50, 50, 55.0f, 55.0f);
-    DXW_D2D_DrawEllipse(150, 150, 25.0f, 55.0f, 2.0f);
+    //DXW_D2D_FillEllipse(50, 50, 55.0f, 55.0f);
+    //DXW_D2D_DrawEllipse(150, 150, 25.0f, 55.0f, 2.0f);
+
+
 
     DXW_D2D_SetScale(1.0f, 2.2f);
     DXW_D2D_SetRotation(35.0f);

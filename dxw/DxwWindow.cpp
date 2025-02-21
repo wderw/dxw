@@ -160,6 +160,31 @@ void DxwWindow::D2D_FillEllipse(const D2D1_ELLIPSE& ellipse)
 	pD2DDeviceContext->FillEllipse(ellipse, pDefaultBrush2.Get());
 }
 
+void DxwWindow::D2D_DrawBezier()
+{
+	D2D1_POINT_2F startPoint = D2D1::Point2F(100.f, 100.f);
+	D2D1_POINT_2F controlPoint1 = D2D1::Point2F(150.f, 50.f);
+	D2D1_POINT_2F controlPoint2 = D2D1::Point2F(200.f, 150.f);
+	D2D1_POINT_2F endPoint = D2D1::Point2F(250.f, 100.f);
+
+	ComPtr<ID2D1PathGeometry> pPathGeometry;
+	ComPtr<ID2D1GeometrySink> pSink;
+	pD2DFactory->CreatePathGeometry(&pPathGeometry);
+
+	pPathGeometry->Open(&pSink);
+
+	pSink->BeginFigure(startPoint, D2D1_FIGURE_BEGIN_FILLED);
+
+	pSink->AddBezier(D2D1::BezierSegment(controlPoint1, controlPoint2, endPoint));
+
+	pSink->EndFigure(D2D1_FIGURE_END_OPEN);
+	pSink->Close();
+
+	ComPtr<ID2D1SolidColorBrush> pBrush;
+	pD2DDeviceContext->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::Red), &pBrush);
+	pD2DDeviceContext->DrawGeometry(pPathGeometry.Get(), pBrush.Get());
+}
+
 void DxwWindow::D2D_ResetTransformMatrix()
 {
 	scalingMatrix2D = D2D1::IdentityMatrix();
@@ -311,19 +336,21 @@ void DxwWindow::DemoNRT(float fi)
 	wchar_t fpsText[80] = L"TEST test za¿ó³æ gêœl¹ jaŸñ The quick brown fox jumps over the lazy dog";
 	D2D1_RECT_F textRect = D2D1::RectF(0, 0, 500, 20);
 
-	D3D_Clear(0, 0, 0, 1.0f);
+	D3D_Clear(0.2f, 0, 0, 1.0f);
 
 	D2D_BeginDraw();
 
-	D2D_SetScale(1.2f, 1.2f);
-	D2D_SetRotation(-5.7f);
-	D2D_SetTranslation(20, 10);
-	D2D_RecalculateTransformMatrix();
+	D2D_DrawBezier();
 
-	D2D_FillRoundedRectangle(D2D1::RectF(250, 250, 600, 400), 15.0f, 15.0f);
+	//D2D_SetScale(1.2f, 1.2f);
+	//D2D_SetRotation(-5.7f);
+	//D2D_SetTranslation(20, 10);
+	//D2D_RecalculateTransformMatrix();
 
-	D2D_ResetTransformMatrix();
-	D2D_FillRoundedRectangle(D2D1::RectF(80, 80, 400, 500), 15.0f, 15.0f);
+	//D2D_FillRoundedRectangle(D2D1::RectF(0, 0, 200, 200), 15.0f, 15.0f);
+
+	//D2D_ResetTransformMatrix();
+	//D2D_FillRoundedRectangle(D2D1::RectF(80, 80, 400, 500), 15.0f, 15.0f);
 
 	D2D_EndDraw();
 }
