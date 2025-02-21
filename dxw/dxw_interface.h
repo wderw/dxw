@@ -20,6 +20,7 @@ DXW_INTERFACE_API void DXW_D2D_SetTranslation(float, float);
 DXW_INTERFACE_API void DXW_D2D_RecalculateTransformMatrix();
 DXW_INTERFACE_API void DXW_D2D_ResetTransformMatrix();
 DXW_INTERFACE_API void DXW_D2D_DrawText(const WCHAR * string, float left, float top, float right, float bottom);
+DXW_INTERFACE_API void DXW_D2D_FillRoundedRectangle(float left, float top, float right, float bottom, float radiusX, float radiusY);
 
 // dx-general
 DXW_INTERFACE_API void DXW_Present(int);

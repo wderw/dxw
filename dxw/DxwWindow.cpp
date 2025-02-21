@@ -130,6 +130,11 @@ void DxwWindow::D2D_DrawText(const WCHAR* text, D2D1_RECT_F textRect)
 	pD2DDeviceContext->DrawTextW(text, wcslen(text), pDefaultTextFormat.Get(), textRect, pDefaultBrush.Get());
 }
 
+void DxwWindow::D2D_FillRoundedRectangle(D2D1_RECT_F rect, float radiusX, float radiusY)
+{
+	pD2DDeviceContext->FillRoundedRectangle(D2D1::RoundedRect(D2D1::RectF(rect.left, rect.top, rect.right, rect.bottom), radiusX, radiusY), pDefaultBrush2.Get());
+}
+
 void DxwWindow::D2D_ResetTransformMatrix()
 {
 	scalingMatrix2D = D2D1::IdentityMatrix();
@@ -284,20 +289,16 @@ void DxwWindow::DemoNRT(float fi)
 	D3D_Clear(0, 0, 0, 1.0f);
 
 	D2D_BeginDraw();
-	pD2DDeviceContext->FillRoundedRectangle(D2D1::RoundedRect(D2D1::RectF(250, 250, 600, 400), 15.0f, 15.0f), pDefaultBrush2.Get());
 
-	//D2D_DrawLine(0, 0, 100, 100);
-	pD2DDeviceContext->FillRoundedRectangle(D2D1::RoundedRect(D2D1::RectF(80, 80, 400, 500), 15.0f, 15.0f), pDefaultBrush2.Get());
+	D2D_SetScale(1.2f, 1.2f);
+	D2D_SetRotation(-5.7f);
+	D2D_SetTranslation(20, 10);
+	D2D_RecalculateTransformMatrix();
 
-	//D2D_SetScale(1.0f, 1.8f);
-	//D2D_SetRotation(35.0f);
-	//D2D_SetTranslation(50, 80);
-	//D2D_RecalculateTransformMatrix();
+	D2D_FillRoundedRectangle(D2D1::RectF(250, 250, 600, 400), 15.0f, 15.0f);
 
-	//D2D_DrawText(fpsText, textRect);
-
-	//D2D_ResetTransformMatrix();
-	//D2D_DrawText(fpsText, textRect);
+	D2D_ResetTransformMatrix();
+	D2D_FillRoundedRectangle(D2D1::RectF(80, 80, 400, 500), 15.0f, 15.0f);
 
 	D2D_EndDraw();
 }

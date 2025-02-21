@@ -24,6 +24,7 @@ typedef void(__stdcall* DXW_D2D_SetTranslationFunc)(float, float);
 typedef void(__stdcall* DXW_D2D_RecalculateTransformMatrixFunc)();
 typedef void(__stdcall* DXW_D2D_ResetTransformMatrixFunc)();
 typedef void(__stdcall* DXW_D2D_DrawTextFunc)(const WCHAR*, float, float, float, float);
+typedef void(__stdcall* DXW_D2D_FillRoundedRectangleFunc)(float, float, float, float, float, float);
 
 // general
 typedef int(__stdcall*  DXW_InitWindowFunc)(HWND);
@@ -53,6 +54,7 @@ DXW_D2D_SetTranslationFunc DXW_D2D_SetTranslation = nullptr;
 DXW_D2D_RecalculateTransformMatrixFunc DXW_D2D_RecalculateTransformMatrix = nullptr;
 DXW_D2D_ResetTransformMatrixFunc DXW_D2D_ResetTransformMatrix = nullptr;
 DXW_D2D_DrawTextFunc DXW_D2D_DrawText = nullptr;
+DXW_D2D_FillRoundedRectangleFunc DXW_D2D_FillRoundedRectangle = nullptr;
 
 // general
 DXW_SetTargetWindowFunc     DXW_SetTargetWindow     = nullptr;
@@ -117,6 +119,7 @@ bool LoadWrapperDll()
         DXW_D2D_RecalculateTransformMatrix = (DXW_D2D_RecalculateTransformMatrixFunc)GetProcAddress(hDLL, "DXW_D2D_RecalculateTransformMatrix");
         DXW_D2D_ResetTransformMatrix = (DXW_D2D_ResetTransformMatrixFunc)GetProcAddress(hDLL, "DXW_D2D_ResetTransformMatrix");
         DXW_D2D_DrawText = (DXW_D2D_DrawTextFunc)GetProcAddress(hDLL, "DXW_D2D_DrawText");
+        DXW_D2D_FillRoundedRectangle = (DXW_D2D_FillRoundedRectangleFunc)GetProcAddress(hDLL, "DXW_D2D_FillRoundedRectangle");
 
         // general
         DXW_InitWindow = (DXW_InitWindowFunc)GetProcAddress(hDLL, "DXW_InitWindow");
@@ -227,14 +230,14 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     DXW_SetTargetWindow(id);
 
-    DXW_DemoNRT(1.0f);
-
     DXW_D2D_BeginDraw();
+
 
     DXW_D2D_SetScale(1.0f, 2.2f);
     DXW_D2D_SetRotation(35.0f);
     DXW_D2D_SetTranslation(100.0f, 50.0f);
     DXW_D2D_RecalculateTransformMatrix();
+    DXW_D2D_FillRoundedRectangle(10.0f, 10.0f, 100.0f, 100.0f, 15.0f, 10.0f);
     DXW_D2D_DrawText(L"AAAAAAAAA¥¥ÆAIEOU hehe", 0, 0, 250, 250);
 
     DXW_D2D_ResetTransformMatrix();
@@ -252,7 +255,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     //DXW_DemoLines(1000000);
 
     DXW_SetTargetWindow(id2);
-    DXW_DemoLines(1000000);
+    //DXW_DemoLines(1000000);
     //DXW_Demo3D();
 
     MSG msg = {};
