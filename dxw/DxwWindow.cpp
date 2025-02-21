@@ -135,6 +135,11 @@ void DxwWindow::D2D_FillRoundedRectangle(D2D1_RECT_F rect, float radiusX, float 
 	pD2DDeviceContext->FillRoundedRectangle(D2D1::RoundedRect(D2D1::RectF(rect.left, rect.top, rect.right, rect.bottom), radiusX, radiusY), pDefaultBrush2.Get());
 }
 
+void DxwWindow::D2D_DrawRoundedRectangle(D2D1_RECT_F rect, float radiusX, float radiusY)
+{
+	pD2DDeviceContext->DrawRoundedRectangle(D2D1::RoundedRect(D2D1::RectF(rect.left, rect.top, rect.right, rect.bottom), radiusX, radiusY), pDefaultBrush2.Get());
+}
+
 void DxwWindow::D2D_ResetTransformMatrix()
 {
 	scalingMatrix2D = D2D1::IdentityMatrix();
