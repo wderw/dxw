@@ -64,6 +64,8 @@ public:
 	void D2D_DrawRoundedRectangle(D2D1_RECT_F rect, float, float);
 	void D2D_DrawRectangle(D2D1_RECT_F rect);
 	void D2D_FillRectangle(D2D1_RECT_F rect);
+	void D2D_DrawEllipse(const D2D1_ELLIPSE& ellipse, float strokeWidth);
+	void D2D_FillEllipse(const D2D1_ELLIPSE& ellipse);
 
 	// dx-general
 	void DX_Present(int);

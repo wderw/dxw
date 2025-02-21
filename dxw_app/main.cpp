@@ -28,7 +28,8 @@ typedef void(__stdcall* DXW_D2D_FillRoundedRectangleFunc)(float, float, float, f
 typedef void(__stdcall* DXW_D2D_DrawRoundedRectangleFunc)(float, float, float, float, float, float);
 typedef void(__stdcall* DXW_D2D_FillRectangleFunc)(float, float, float, float);
 typedef void(__stdcall* DXW_D2D_DrawRectangleFunc)(float, float, float, float);
-
+typedef void(__stdcall* DXW_D2D_FillEllipseFunc)(float, float, float, float);
+typedef void(__stdcall* DXW_D2D_DrawEllipseFunc)(float, float, float, float, float);
 
 // general
 typedef int(__stdcall*  DXW_InitWindowFunc)(HWND);
@@ -62,6 +63,8 @@ DXW_D2D_FillRoundedRectangleFunc DXW_D2D_FillRoundedRectangle = nullptr;
 DXW_D2D_DrawRoundedRectangleFunc DXW_D2D_DrawRoundedRectangle = nullptr;
 DXW_D2D_FillRectangleFunc DXW_D2D_FillRectangle = nullptr;
 DXW_D2D_DrawRectangleFunc DXW_D2D_DrawRectangle = nullptr;
+DXW_D2D_FillEllipseFunc DXW_D2D_FillEllipse = nullptr;
+DXW_D2D_DrawEllipseFunc DXW_D2D_DrawEllipse = nullptr;
 
 // general
 DXW_SetTargetWindowFunc     DXW_SetTargetWindow     = nullptr;
@@ -130,6 +133,8 @@ bool LoadWrapperDll()
         DXW_D2D_DrawRoundedRectangle = (DXW_D2D_DrawRoundedRectangleFunc)GetProcAddress(hDLL, "DXW_D2D_DrawRoundedRectangle");
         DXW_D2D_FillRectangle = (DXW_D2D_FillRectangleFunc)GetProcAddress(hDLL, "DXW_D2D_FillRectangle");
         DXW_D2D_DrawRectangle = (DXW_D2D_DrawRectangleFunc)GetProcAddress(hDLL, "DXW_D2D_DrawRectangle");
+        DXW_D2D_FillEllipse = (DXW_D2D_FillEllipseFunc)GetProcAddress(hDLL, "DXW_D2D_FillEllipse");
+        DXW_D2D_DrawEllipse = (DXW_D2D_DrawEllipseFunc)GetProcAddress(hDLL, "DXW_D2D_DrawEllipse");
 
         // general
         DXW_InitWindow = (DXW_InitWindowFunc)GetProcAddress(hDLL, "DXW_InitWindow");
@@ -243,8 +248,11 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     DXW_D2D_BeginDraw();
 
 //    DXW_D2D_DrawRoundedRectangle(20.0f, 40.0f, 150.0f, 150.0f, 10.0f, 10.0f);
-    DXW_D2D_FillRectangle(10.0f, 10.0f, 100.0f, 100.0f);
-    DXW_D2D_DrawRectangle(40.0f, 40.0f, 120.0f, 120.0f);
+    //DXW_D2D_FillRectangle(10.0f, 10.0f, 100.0f, 100.0f);
+    //DXW_D2D_DrawRectangle(40.0f, 40.0f, 120.0f, 120.0f);
+
+    DXW_D2D_FillEllipse(50, 50, 55.0f, 55.0f);
+    DXW_D2D_DrawEllipse(150, 150, 25.0f, 55.0f, 2.0f);
 
     DXW_D2D_SetScale(1.0f, 2.2f);
     DXW_D2D_SetRotation(35.0f);

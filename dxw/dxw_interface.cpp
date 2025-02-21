@@ -154,6 +154,18 @@ void DXW_D2D_DrawRectangle(float left, float top, float right, float bottom)
 	DxwSharedContext::GetInstance().GetCurrentWindow()->D2D_DrawRectangle(D2D1::RectF(left, top, right, bottom));
 }
 
+void DXW_D2D_DrawEllipse(float centerX, float centerY, float radiusX, float radiusY, float strokeWidth)
+{
+	LOG_TRACE("DXW_D2D_DrawEllipse called");
+	DxwSharedContext::GetInstance().GetCurrentWindow()->D2D_DrawEllipse(D2D1::Ellipse(D2D1::Point2F(centerX, centerY), radiusX, radiusY), strokeWidth);
+}
+
+void DXW_D2D_FillEllipse(float centerX, float centerY, float radiusX, float radiusY)
+{
+	LOG_TRACE("DXW_D2D_FillEllipse called");
+	DxwSharedContext::GetInstance().GetCurrentWindow()->D2D_FillEllipse(D2D1::Ellipse(D2D1::Point2F(centerX, centerY), radiusX, radiusY));
+}
+
 void DXW_D2D_BeginDraw()
 {
 	LOG_TRACE("DXW_D2D_BeginDraw called");

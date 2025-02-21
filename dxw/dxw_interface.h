@@ -24,6 +24,8 @@ DXW_INTERFACE_API void DXW_D2D_FillRoundedRectangle(float left, float top, float
 DXW_INTERFACE_API void DXW_D2D_DrawRoundedRectangle(float left, float top, float right, float bottom, float radiusX, float radiusY);
 DXW_INTERFACE_API void DXW_D2D_FillRectangle(float left, float top, float right, float bottom);
 DXW_INTERFACE_API void DXW_D2D_DrawRectangle(float left, float top, float right, float bottom);
+DXW_INTERFACE_API void DXW_D2D_FillEllipse(float centerX, float centerY, float radiusX, float radiusY);
+DXW_INTERFACE_API void DXW_D2D_DrawEllipse(float centerX, float centerY, float radiusX, float radiusY, float strokeWidth);
 
 // dx-general
 DXW_INTERFACE_API void DXW_Present(int);

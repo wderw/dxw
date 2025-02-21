@@ -150,6 +150,16 @@ void DxwWindow::D2D_FillRectangle(D2D1_RECT_F rect)
 	pD2DDeviceContext->FillRectangle(D2D1::RectF(rect.left, rect.top, rect.right, rect.bottom), pDefaultBrush2.Get());
 }
 
+void DxwWindow::D2D_DrawEllipse(const D2D1_ELLIPSE& ellipse, float strokeWidth)
+{
+	pD2DDeviceContext->DrawEllipse(ellipse, pDefaultBrush2.Get(), strokeWidth);
+}
+
+void DxwWindow::D2D_FillEllipse(const D2D1_ELLIPSE& ellipse)
+{
+	pD2DDeviceContext->FillEllipse(ellipse, pDefaultBrush2.Get());
+}
+
 void DxwWindow::D2D_ResetTransformMatrix()
 {
 	scalingMatrix2D = D2D1::IdentityMatrix();
