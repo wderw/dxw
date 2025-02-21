@@ -62,6 +62,8 @@ public:
 	void D2D_DrawText(const WCHAR* text, D2D1_RECT_F textRect);
 	void D2D_FillRoundedRectangle(D2D1_RECT_F rect, float, float);
 	void D2D_DrawRoundedRectangle(D2D1_RECT_F rect, float, float);
+	void D2D_DrawRectangle(D2D1_RECT_F rect);
+	void D2D_FillRectangle(D2D1_RECT_F rect);
 
 	// dx-general
 	void DX_Present(int);

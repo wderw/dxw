@@ -142,6 +142,18 @@ void DXW_D2D_DrawRoundedRectangle(float left, float top, float right, float bott
 	DxwSharedContext::GetInstance().GetCurrentWindow()->D2D_DrawRoundedRectangle(D2D1::RectF(left, top, right, bottom), radiusX, radiusY);
 }
 
+void DXW_D2D_FillRectangle(float left, float top, float right, float bottom)
+{
+	LOG_TRACE("DXW_D2D_FillRectangle called");
+	DxwSharedContext::GetInstance().GetCurrentWindow()->D2D_FillRectangle(D2D1::RectF(left, top, right, bottom));
+}
+
+void DXW_D2D_DrawRectangle(float left, float top, float right, float bottom)
+{
+	LOG_TRACE("DXW_D2D_DrawRectangle called");
+	DxwSharedContext::GetInstance().GetCurrentWindow()->D2D_DrawRectangle(D2D1::RectF(left, top, right, bottom));
+}
+
 void DXW_D2D_BeginDraw()
 {
 	LOG_TRACE("DXW_D2D_BeginDraw called");
